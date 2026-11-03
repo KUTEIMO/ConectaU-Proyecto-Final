@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Review } from '../types';
+import { calculateAverageRating, normalizeReviewRating } from '../utils/domainHelpers';
 
 const reviewsCollection = collection(db, 'reviews');
 
@@ -74,7 +75,7 @@ export const submitReview = async (params: {
     reviewerRole: params.reviewerRole,
     revieweeId: params.revieweeId,
     revieweeName: params.revieweeName,
-    rating: Math.min(Math.max(params.rating, 1), 5),
+    rating: normalizeReviewRating(params.rating),
     comment: params.comment.trim(),
     categories: params.categories || {
       communication: 5,
@@ -90,12 +91,12 @@ export const submitReview = async (params: {
   try {
     const qUserReviews = query(reviewsCollection, where('revieweeId', '==', params.revieweeId));
     const userReviewsSnap = await getDocs(qUserReviews);
-    let totalScore = 0;
+    const allRatings: number[] = [];
     userReviewsSnap.forEach((d) => {
-      totalScore += d.data().rating || 5;
+      allRatings.push(d.data().rating || 5);
     });
-    const ratingsCount = userReviewsSnap.size;
-    const ratingAverage = Number((totalScore / ratingsCount).toFixed(1));
+    const ratingsCount = allRatings.length;
+    const ratingAverage = calculateAverageRating(allRatings);
 
     const userRef = doc(db, 'users', params.revieweeId);
     const userDoc = await getDoc(userRef);
