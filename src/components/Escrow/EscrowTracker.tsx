@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ShieldCheck, CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp, Lock, Info } from 'lucide-react';
+import { EscrowStage } from '../../types';
+import { resolveEscrowStep } from '../../utils/domainHelpers';
 
 interface EscrowTrackerProps {
   status: 'pending' | 'reviewed' | 'interview' | 'accepted' | 'rejected' | 'completed';
-  stage?: 'deposited' | 'in_progress' | 'review' | 'released' | 'refunded';
+  stage?: EscrowStage;
   salary?: string;
   projectTitle?: string;
   compact?: boolean;
@@ -17,13 +19,7 @@ export const EscrowTracker: React.FC<EscrowTrackerProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(!compact);
 
-  const isCompleted = status === 'completed' || stage === 'released';
-  const isReview = stage === 'review';
-  const isAccepted = status === 'accepted' || stage === 'in_progress' || isReview || isCompleted;
-  const isRejected = status === 'rejected' || stage === 'refunded';
-
-  // Determinación de la etapa activa (1 a 4)
-  const currentStep = isCompleted ? 4 : isReview ? 3 : isAccepted ? 2 : 1;
+  const { currentStep, isAccepted, isRejected } = resolveEscrowStep(status, stage);
 
   const stages = [
     {
@@ -111,7 +107,16 @@ export const EscrowTracker: React.FC<EscrowTrackerProps> = ({
           {/* Línea de avance activa */}
           <div
             className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-accent transition-all duration-300 -z-0"
-            style={{ width: currentStep === 2 ? '33%' : '0%' }}
+            style={{
+              width:
+                currentStep === 4
+                  ? 'calc(100% - 3rem)'
+                  : currentStep === 3
+                  ? '66%'
+                  : currentStep === 2
+                  ? '33%'
+                  : '0%',
+            }}
           />
 
           {stages.map((stage) => {
