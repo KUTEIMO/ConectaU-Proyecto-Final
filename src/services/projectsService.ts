@@ -13,33 +13,12 @@ import {
 import { db } from '../config/firebase';
 import { Project } from '../types';
 import { DEFAULT_CITY } from '../constants/geo';
-
-const normalizeType = (type: any): Project['type'] => {
-  if (!type) return 'project';
-  const value = String(type).toLowerCase();
-  if (value.includes('práctica') || value.includes('practice')) return 'practice';
-  return value.includes('proyecto') ? 'project' : (type as any);
-};
+import { normalizeProjectStatus, normalizeProjectType } from '../utils/domainHelpers';
 
 const sortProjectsByDate = (projects: Project[]) =>
   projects.sort(
     (a, b) => (b.createdAt?.getTime?.() || 0) - (a.createdAt?.getTime?.() || 0)
   );
-
-const normalizeStatus = (status: any): Project['status'] => {
-  if (!status && typeof status !== 'boolean') {
-    return 'active';
-  }
-  const value = typeof status === 'string' ? status.toLowerCase() : status;
-  if (value === true) return 'active';
-  if (value === false) return 'inactive';
-  if (typeof value === 'string') {
-    if (value.includes('active')) return 'active';
-    if (value.includes('inactive')) return 'inactive';
-    if (value.includes('closed') || value.includes('cerrad')) return 'closed';
-  }
-  return 'active';
-};
 
 const mapProjectDoc = (docSnapshot: any): Project => {
   const data = docSnapshot.data();
@@ -53,8 +32,8 @@ const mapProjectDoc = (docSnapshot: any): Project => {
       id: companyData.id || data.companyId || '',
       name: companyData.name || data.companyName || 'Empresa',
     },
-    status: normalizeStatus(data.status),
-    type: normalizeType(data.type),
+    status: normalizeProjectStatus(data.status),
+    type: normalizeProjectType(data.type),
     location: data.location || DEFAULT_CITY,
     skillsRequired: data.skillsRequired || [],
     requirements: data.requirements || [],
@@ -111,7 +90,7 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
   if (filters) {
     projects = projects.filter((project) => {
       const statusMatch = filters.status
-        ? normalizeStatus(project.status) === normalizeStatus(filters.status)
+        ? normalizeProjectStatus(project.status) === normalizeProjectStatus(filters.status)
         : true;
       const typeMatch = matchesFilter(project.type, filters.type);
       const modalityMatch = matchesFilter(project.modality, filters.modality);
