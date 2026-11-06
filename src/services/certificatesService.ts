@@ -10,21 +10,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Application, DigitalCertificate } from '../types';
+import { generateVerificationCode } from '../utils/domainHelpers';
+
+export { generateVerificationCode };
 
 const certificatesCollection = collection(db, 'certificates');
-
-/**
- * Genera un código hash único de validación académica en formato institucional
- * Ejemplo: CONECTAU-VAL-A7F9E2
- */
-export const generateVerificationCode = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return `CONECTAU-VAL-${result}`;
-};
 
 /**
  * Mapea un documento de Firestore a DigitalCertificate
