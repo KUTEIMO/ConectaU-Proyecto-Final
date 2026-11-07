@@ -19,7 +19,9 @@ function devActivityLoggerPlugin(): Plugin {
               const userLabel = entry.user?.email ? `[${entry.user.email} (${entry.user.role})]` : '[Sin Auth]'
               const line = `[${entry.timestamp || new Date().toISOString()}] [${entry.type?.toUpperCase()}] [${entry.path || '/'}] ${userLabel} ${entry.message} ${entry.details ? JSON.stringify(entry.details) : ''}\n`
               fs.appendFileSync(logFile, line, 'utf8')
-            } catch (err) {}
+            } catch {
+              // Ignorar body malformado en logger local de desarrollo
+            }
             res.statusCode = 200
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ status: 'ok' }))
@@ -27,7 +29,9 @@ function devActivityLoggerPlugin(): Plugin {
         } else if (req.method === 'DELETE') {
           try {
             if (fs.existsSync(logFile)) fs.writeFileSync(logFile, '', 'utf8')
-          } catch (e) {}
+          } catch {
+            // Ignorar error si el archivo está bloqueado
+          }
           res.statusCode = 200
           res.end(JSON.stringify({ status: 'cleared' }))
         } else {
