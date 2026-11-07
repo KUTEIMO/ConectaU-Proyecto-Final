@@ -134,7 +134,9 @@ class ActivityLogger {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
         }).catch(() => {});
-      } catch (e) {}
+      } catch {
+        // Silenciar error de servidor de logs en modo producción/estático
+      }
     }
   }
 
@@ -146,7 +148,9 @@ class ActivityLogger {
     this.logs = [];
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {}
+    } catch {
+      // Ignorar si localStorage no está disponible
+    }
   }
 }
 
