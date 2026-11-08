@@ -8,6 +8,8 @@
     "build:prod": "vite build --mode production",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "node --test src/test/*.test.mjs",
+    "test:security": "node --test src/test/firebase.security.test.mjs",
     "seed:conversations": "node scripts/backfill-conversations.js",
     "pre-deploy": "powershell -ExecutionPolicy Bypass -File scripts\\verificar-pre-deploy.ps1",
     "deploy": "npm run build:prod && firebase deploy --only hosting",
