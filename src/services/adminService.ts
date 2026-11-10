@@ -101,7 +101,14 @@ export interface AdminDashboardData {
 }
 
 const PROJECT_STATUSES: Project['status'][] = ['active', 'inactive', 'closed'];
-const APPLICATION_STATUSES: Application['status'][] = ['pending', 'reviewed', 'interview', 'accepted', 'rejected'];
+const APPLICATION_STATUSES: Application['status'][] = [
+  'pending',
+  'reviewed',
+  'interview',
+  'accepted',
+  'completed',
+  'rejected',
+];
 
 export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
   const [
@@ -111,10 +118,13 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
     projectsSnapshot,
     applicationsSnapshot,
     acceptedSnapshot,
+    completedSnapshot,
     reviewedSnapshot,
     activeUsersSnapshot,
     inactiveUsersSnapshot,
     pendingVerificationSnapshot,
+    pendingCompaniesSnapshot,
+    pendingStudentsSnapshot,
   ] = await Promise.all([
     getCountFromServer(usersCollection),
     getCountFromServer(query(usersCollection, where('role', '==', 'company'))),
@@ -122,15 +132,18 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
     getCountFromServer(projectsCollection),
     getCountFromServer(applicationsCollection),
     getCountFromServer(query(applicationsCollection, where('status', '==', 'accepted'))),
+    getCountFromServer(query(applicationsCollection, where('status', '==', 'completed'))),
     getCountFromServer(query(applicationsCollection, where('status', '==', 'reviewed'))),
     getCountFromServer(query(usersCollection, where('isActive', '==', true))),
     getCountFromServer(query(usersCollection, where('isActive', '==', false))),
     getCountFromServer(query(usersCollection, where('isVerified', '==', false))),
+    getCountFromServer(query(usersCollection, where('isVerified', '==', false), where('role', '==', 'company'))),
+    getCountFromServer(query(usersCollection, where('isVerified', '==', false), where('role', '==', 'student'))),
   ]);
 
   const [pendingUsersSnapshot, recentProjectsSnapshot, applicationStatusSnapshots, projectStatusSnapshots] =
     await Promise.all([
-      getDocs(query(usersCollection, where('isVerified', '==', false), limit(6))),
+      getDocs(query(usersCollection, where('isVerified', '==', false), limit(30))),
       getDocs(query(projectsCollection, orderBy('createdAt', 'desc'), limit(6))),
       Promise.all(
         APPLICATION_STATUSES.map((status) =>
@@ -146,9 +159,11 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
 
   const pendingUsers = pendingUsersSnapshot.docs
     .map(mapUserDoc)
+    .filter((u) => !u.isGuest && (u.name || '').trim().toLowerCase() !== 'invitado')
     .sort(
       (a, b) => (b.createdAt?.getTime?.() || 0) - (a.createdAt?.getTime?.() || 0)
-    );
+    )
+    .slice(0, 6);
 
   const recentProjects: AdminProjectSummary[] = recentProjectsSnapshot.docs.map((docSnapshot) => {
     const data = docSnapshot.data();
@@ -175,8 +190,8 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
     return acc;
   }, {} as Record<Project['status'], number>);
 
-  const pendingCompanies = pendingUsers.filter((user) => user.role === 'company').length;
-  const pendingStudents = pendingUsers.filter((user) => user.role === 'student').length;
+  const pendingCompanies = pendingCompaniesSnapshot.data().count;
+  const pendingStudents = pendingStudentsSnapshot.data().count;
 
   const stats: AdminAnalytics = {
     totalUsers: totalUsersSnapshot.data().count,
@@ -184,7 +199,7 @@ export const getAdminDashboardData = async (): Promise<AdminDashboardData> => {
     totalStudents: studentsSnapshot.data().count,
     totalProjects: projectsSnapshot.data().count,
     totalApplications: applicationsSnapshot.data().count,
-    acceptedApplications: acceptedSnapshot.data().count,
+    acceptedApplications: acceptedSnapshot.data().count + completedSnapshot.data().count,
     reviewedApplications: reviewedSnapshot.data().count,
     activeUsers: activeUsersSnapshot.data().count,
     inactiveUsers: inactiveUsersSnapshot.data().count,
