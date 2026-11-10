@@ -12,7 +12,7 @@
 
 **Plataforma web colaborativa que conecta a estudiantes universitarios de Cúcuta con MIPYMES y emprendimientos locales para el desarrollo de proyectos formativos con compensación y evidencia certificable.**
 
-[🌐 Ver Aplicación en Producción](https://conectau-be1a2.web.app) • [📋 Tablero Jira](https://conectau.atlassian.net) • [📄 Dossier de Diseño (DERS)](docs/DOSSIER_DISENO_DERS.md) • [📊 Matriz de Asignación](docs/MATRIZ_ASIGNACION_RESPONSABILIDADES.md)
+[🌐 Ver Aplicación en Producción](https://conectau-be1a2.web.app) • [📋 Tablero Jira](https://conectau.atlassian.net) • [📄 Dossier de Diseño (DERS)](docs/DOSSIER_DISENO_DERS.md) • [📊 Matriz de Asignación](docs/MATRIZ_ASIGNACION_RESPONSABILIDADES.md) • [🧪 Evidencias Plan de Pruebas](docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md)
 
 </div>
 
@@ -107,6 +107,9 @@ npm run dev
 
 # 5. Compilar para producción
 npm run build
+
+# 6. Ejecutar suite de pruebas unitarias y seguridad
+npm test
 ```
 
 ---
