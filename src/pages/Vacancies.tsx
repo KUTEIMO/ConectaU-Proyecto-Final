@@ -1,22 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Briefcase, Plus, Edit, Eye, Power } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { getProjects } from '../services/projectsService';
+import { getProjects, updateProject } from '../services/projectsService';
 import { Project } from '../types';
 
 export default function Vacancies() {
   const { userData, currentUser } = useAuthStore();
   const [vacancies, setVacancies] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (userData?.role === 'company' && currentUser) {
-      loadVacancies();
-    }
-  }, [userData, currentUser]);
-
-  const loadVacancies = async () => {
+  const loadVacancies = useCallback(async () => {
     if (!currentUser) return;
     try {
       const data = await getProjects({ companyId: currentUser.uid });
@@ -25,6 +20,33 @@ export default function Vacancies() {
       console.error('Error loading vacancies:', error);
     } finally {
       setLoading(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (userData?.role === 'company' && currentUser) {
+      loadVacancies();
+    }
+  }, [userData, currentUser, loadVacancies]);
+
+  const handleToggleStatus = async (vacancy: Project) => {
+    const nextStatus = vacancy.status === 'active' ? 'inactive' : 'active';
+    const confirmMsg =
+      nextStatus === 'inactive'
+        ? `¿Deseas desactivar/cerrar la vacante "${vacancy.title}"? Conservará su historial de postulaciones.`
+        : `¿Deseas reactivar la vacante "${vacancy.title}"?`;
+    if (!window.confirm(confirmMsg)) return;
+    setUpdatingId(vacancy.id);
+    try {
+      await updateProject(vacancy.id, { status: nextStatus });
+      setVacancies((prev) =>
+        prev.map((item) => (item.id === vacancy.id ? { ...item, status: nextStatus } : item))
+      );
+    } catch (error) {
+      console.error('Error toggling vacancy status:', error);
+      alert('No se pudo actualizar el estado de la vacante.');
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -102,8 +124,19 @@ export default function Vacancies() {
                   >
                     <Edit className="h-5 w-5" />
                   </Link>
-                  <button className="p-2 text-text-secondary hover:text-red-600" title="Eliminar">
-                    <Trash2 className="h-5 w-5" />
+                  <button
+                    type="button"
+                    disabled={updatingId === vacancy.id}
+                    onClick={() => handleToggleStatus(vacancy)}
+                    className={`p-2 disabled:opacity-50 ${
+                      vacancy.status === 'active'
+                        ? 'text-text-secondary hover:text-amber-600'
+                        : 'text-emerald-600 hover:text-emerald-700'
+                    }`}
+                    title={vacancy.status === 'active' ? 'Desactivar vacante' : 'Reactivar vacante'}
+                    aria-label={vacancy.status === 'active' ? 'Desactivar vacante' : 'Reactivar vacante'}
+                  >
+                    <Power className="h-5 w-5" />
                   </button>
                 </div>
               </div>

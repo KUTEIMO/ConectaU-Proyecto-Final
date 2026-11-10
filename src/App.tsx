@@ -9,6 +9,7 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LandingRoute from './components/Auth/LandingRoute';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ForgotPassword from './components/Auth/ForgotPassword';
 import Landing from './pages/Landing';
 import Home from './pages/Home';
 import Jobs from './pages/Jobs';
@@ -94,6 +95,7 @@ function App() {
         <Route path="/verify/:id" element={<VerifyCertificate />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protegidas */}
         <Route

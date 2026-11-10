@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Mail, Lock, User, LogIn, Home, ArrowLeft } from 'lucide-react';
-import { registerWithEmail } from '../../services/authService';
+import { registerWithEmail, getUserData } from '../../services/authService';
 import { useAuthStore } from '../../store/authStore';
 import { UserRole } from '../../types';
+import { isInstitutionalEmail } from '../../utils/domainHelpers';
 
 interface RegisterForm {
   name: string;
@@ -18,12 +19,13 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { setCurrentUser } = useAuthStore();
+  const { setCurrentUser, setUserData } = useAuthStore();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>({
     defaultValues: { role: 'student' }
   });
 
   const password = watch('password');
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterForm) => {
     if (data.password !== data.confirmPassword) {
@@ -31,12 +33,19 @@ export default function Register() {
       return;
     }
 
+    if (data.role === 'student' && !isInstitutionalEmail(data.email)) {
+      setError('Los estudiantes deben registrarse con un correo institucional (.edu / .edu.co).');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
       const user = await registerWithEmail(data.email, data.password, data.name, data.role);
+      const profile = await getUserData(user.uid);
       setCurrentUser(user);
-      navigate('/');
+      setUserData(profile);
+      navigate('/app');
     } catch (err: any) {
       setError(err.message || 'Error al registrar usuario');
     } finally {
@@ -108,9 +117,14 @@ export default function Register() {
                 autoComplete="email username"
                 {...register('email', { required: 'El email es requerido' })}
                 className="w-full pl-10 pr-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="tu@email.com"
+                placeholder={selectedRole === 'student' ? 'estudiante@universidad.edu.co' : 'talento@empresa.com'}
               />
             </div>
+            {selectedRole === 'student' && (
+              <p className="mt-1 text-xs text-text-secondary">
+                Se requiere correo institucional (.edu o .edu.co) para validar tu vinculación académica.
+              </p>
+            )}
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
             )}

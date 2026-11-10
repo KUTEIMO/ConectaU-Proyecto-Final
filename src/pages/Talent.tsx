@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GraduationCap,
@@ -43,17 +43,7 @@ export default function Talent() {
 
   const isCompany = userData?.role === 'company';
 
-  useEffect(() => {
-    loadStudents();
-  }, [filters]);
-
-  useEffect(() => {
-    if (userData?.id && isCompany) {
-      loadSavedProfiles();
-    }
-  }, [userData?.id, isCompany]);
-
-  const loadStudents = async () => {
+  const loadStudents = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getStudents(filters);
@@ -63,9 +53,9 @@ export default function Talent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const loadSavedProfiles = async () => {
+  const loadSavedProfiles = useCallback(async () => {
     if (!userData?.id) return;
     try {
       const data = await getSavedProfiles(userData.id);
@@ -73,7 +63,17 @@ export default function Talent() {
     } catch (error) {
       console.error('Error loading saved profiles:', error);
     }
-  };
+  }, [userData?.id]);
+
+  useEffect(() => {
+    loadStudents();
+  }, [loadStudents]);
+
+  useEffect(() => {
+    if (userData?.id && isCompany) {
+      loadSavedProfiles();
+    }
+  }, [userData?.id, isCompany, loadSavedProfiles]);
 
   const handleContact = async (student: StudentWithProfile) => {
     if (!userData?.id) return;
@@ -324,7 +324,11 @@ const filteredStudents = useMemo(() => {
               </div>
 
               <button
-                onClick={() => setExpandedCard((prev) => (prev === student.id ? null : student.id))}
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setExpandedCard((prev) => (prev === student.id ? null : student.id));
+                }}
                 className="text-sm text-primary mt-3 text-left"
               >
                 {expandedCard === student.id ? 'Ocultar detalles' : 'Ver detalles'}

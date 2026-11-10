@@ -128,9 +128,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           <div className="flex items-center space-x-2 text-secondary">
             <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
             <h3 className="font-bold text-base text-secondary">
-              {reviewerRole === 'company'
-                ? `Calificar a ${revieweeName}`
-                : `Calificar a ${revieweeName}`}
+              {`Calificar a ${revieweeName}`}
             </h3>
           </div>
           <button

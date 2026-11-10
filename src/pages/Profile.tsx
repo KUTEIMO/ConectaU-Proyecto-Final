@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { useAuthStore } from '../store/authStore';
 import { Mail, Briefcase, Edit, CheckCircle, AlertCircle, Award, FileCheck, ShieldCheck, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,6 +14,8 @@ export default function Profile() {
   const [selectedCert, setSelectedCert] = useState<DigitalCertificate | null>(null);
   const [studentCerts, setStudentCerts] = useState<DigitalCertificate[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [verificationRequested, setVerificationRequested] = useState(false);
+  const [requestingVerification, setRequestingVerification] = useState(false);
   const studentRequiredFields = ['university', 'career', 'semester', 'skills', 'portfolio'];
 
   useEffect(() => {
@@ -126,9 +130,40 @@ export default function Profile() {
                 <p className="text-sm text-yellow-800">
                   Tu perfil está pendiente de verificación institucional.
                 </p>
-                <button className="mt-2 text-sm text-primary hover:underline font-medium">
-                  Solicitar verificación
-                </button>
+                {verificationRequested ? (
+                  <p className="mt-2 text-sm text-emerald-700 font-medium">
+                    Solicitud enviada a Coordinación Académica.
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={requestingVerification}
+                    onClick={async () => {
+                      setRequestingVerification(true);
+                      try {
+                        await addDoc(collection(db, 'support_tickets'), {
+                          userId: userData.id,
+                          userEmail: userData.email,
+                          userName: userData.name,
+                          category: 'consulta',
+                          subject: 'Solicitud de verificación institucional de estudiante',
+                          description: `Estudiante ${userData.name} (${userData.university || 'Universidad no definida'}) solicita revisión y activación de insignia institucional.`,
+                          status: 'open',
+                          createdAt: serverTimestamp(),
+                        });
+                        setVerificationRequested(true);
+                      } catch (err) {
+                        console.error('Error solicitando verificación:', err);
+                        alert('No fue posible registrar la solicitud en este momento.');
+                      } finally {
+                        setRequestingVerification(false);
+                      }
+                    }}
+                    className="mt-2 text-sm text-primary hover:underline font-medium disabled:opacity-50"
+                  >
+                    {requestingVerification ? 'Enviando solicitud...' : 'Solicitar verificación'}
+                  </button>
+                )}
               </div>
             )}
           </div>

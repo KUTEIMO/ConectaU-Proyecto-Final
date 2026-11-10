@@ -20,6 +20,9 @@ interface VacancyForm {
   benefits: string;
   minExperience: string;
   maxExperience: string;
+  career: string;
+  duration: string;
+  deliverables: string;
 }
 
 export default function CreateVacancy() {
@@ -60,6 +63,9 @@ export default function CreateVacancy() {
         benefits: data.benefits.split('\n').filter(b => b.trim()),
         minExperience: data.minExperience || undefined,
         maxExperience: data.maxExperience || undefined,
+        career: data.career || undefined,
+        duration: data.duration || undefined,
+        deliverables: data.deliverables || undefined,
       };
 
       await createProject(project);
@@ -226,6 +232,43 @@ export default function CreateVacancy() {
               <p className="mt-1.5 text-xs text-text-secondary">
                 Estipendio o apoyo económico previsto para el estudiante al culminar los entregables del proyecto.
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Carrera / Programa objetivo (Opcional)
+                </label>
+                <input
+                  type="text"
+                  {...register('career')}
+                  placeholder="Ej: Ingeniería de Sistemas"
+                  className="w-full px-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Duración estimada (Opcional)
+                </label>
+                <input
+                  type="text"
+                  {...register('duration')}
+                  placeholder="Ej: 4 semanas / 80 horas"
+                  className="w-full px-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Entregables esperados (Opcional)
+              </label>
+              <input
+                type="text"
+                {...register('deliverables')}
+                placeholder="Ej: Repositorio documentado + Demo funcional desplegada"
+                className="w-full px-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
             </div>
           </div>
         </div>

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   getAllProjectsForAdmin,
   updateProjectStatusAdmin,
-  deleteProjectAdmin,
 } from '../services/adminService';
 import { Project } from '../types';
 import {
@@ -64,16 +63,18 @@ export default function AdminVacancies() {
   };
 
   const handleDelete = async (projectId: string) => {
-    const confirmDelete = window.confirm(
-      '¿Seguro que deseas eliminar esta vacante? Esta acción no se puede deshacer.'
+    const confirmArchive = window.confirm(
+      'Por integridad histórica (política Append-Only), la vacante será cerrada permanentemente. ¿Deseas continuar?'
     );
-    if (!confirmDelete) return;
+    if (!confirmArchive) return;
     try {
       setDeletingId(projectId);
-      await deleteProjectAdmin(projectId);
-      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+      await updateProjectStatusAdmin(projectId, 'closed');
+      setProjects((prev) =>
+        prev.map((project) => (project.id === projectId ? { ...project, status: 'closed' } : project))
+      );
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error('Error closing project:', error);
     } finally {
       setDeletingId(null);
     }
