@@ -130,10 +130,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-secondary tracking-wide mt-0.5">
-                  Universidad Simón Bolívar • Cúcuta
+                  {university || 'Institución de Educación Superior Aliada'} • {companyName}
                 </p>
                 <p className="text-[10px] text-slate-500">
-                  Facultad de Ingenierías • Coordinación de Vinculación y Prácticas
+                  Red Universitaria ConectaU • Coordinación de Vinculación y Prácticas
                 </p>
               </div>
 
