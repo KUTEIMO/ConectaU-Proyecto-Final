@@ -24,7 +24,7 @@ const envVarNames: Record<string, string> = {
 };
 
 const missingVars = Object.entries(requiredEnvVars)
-  .filter(([_, value]) => !value)
+  .filter(([, value]) => !value)
   .map(([key]) => envVarNames[key]);
 
 if (missingVars.length > 0) {

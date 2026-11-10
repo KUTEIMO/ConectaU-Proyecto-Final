@@ -115,13 +115,18 @@ export default function Messages() {
     }
   };
 
-  if (!currentUser) {
-    return (
-      <div className="card text-center py-12">
-        <p className="text-text-secondary">Debes iniciar sesión para ver tus mensajes.</p>
-      </div>
-    );
-  }
+  // Hook para detectar tamaño de pantalla (declarado antes de cualquier return condicional)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleConversationSelect = (conversation: Conversation) => {
     setSelectedConversation(conversation);
@@ -198,18 +203,13 @@ export default function Messages() {
     );
   }, [conversations, loadingConversations, selectedConversation]);
 
-  // Hook para detectar tamaño de pantalla
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  if (!currentUser) {
+    return (
+      <div className="card text-center py-12">
+        <p className="text-text-secondary">Debes iniciar sesión para ver tus mensajes.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
