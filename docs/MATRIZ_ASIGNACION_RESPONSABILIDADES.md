@@ -4,7 +4,7 @@
 > **Asignatura:** Proyecto Final de Diseño de Ingeniería de Sistemas (9º Semestre — 2026-2)  
 > **Docente Titular:** Ing. Jover Alonso  
 > **Institución:** Universidad Simón Bolívar (Sede Cúcuta)  
-> **Última Actualización:** 30 de octubre de 2026  
+> **Última Actualización:** 10 de noviembre de 2026  
 > **Estado:** 100% Sincronizado con Jira Cloud (`CON`) y GitHub Flow
 
 ---
@@ -50,14 +50,14 @@
 
 | Clave Jira | Responsable | Rol | Resumen de la Actividad | Rama Git | Entregable en Código | Estado Jira |
 | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| **CON-20** | Fernanda Jaimes | Frontend | Visualización del estado del pago protegido (depósito en custodia) | `feature/CON-20-pago-protegido-escrow` | `src/components/Escrow/EscrowTracker.tsx` | En curso |
+| **CON-20** | Fernanda Jaimes | Frontend | Visualización del estado del pago protegido (depósito en custodia) | `feature/CON-20-pago-protegido-escrow` | `src/components/Escrow/EscrowTracker.tsx` | Finalizado |
 | **CON-21** | Eduardo Soto | Full-Stack | Estructura de entregables e hitos del proyecto | `feature/CON-21-entregables-hitos` | `src/components/Milestones/MilestonesList.tsx` | Finalizado |
-| **CON-22** | Fernanda Jaimes | Frontend | Generación de certificado de experiencia en formato PDF | `feature/CON-22-certificado-pdf` | `src/components/Certificate/CertificateModal.tsx` | En curso |
+| **CON-22** | Fernanda Jaimes | Frontend | Generación de certificado de experiencia en formato PDF | `feature/CON-22-certificado-pdf` | `src/components/Certificate/CertificateModal.tsx` | Finalizado |
 | **CON-23** | María José Gómez | Backend | Verificación de certificados por código único | `feature/CON-23-verificacion-certificados` | `src/pages/VerifyCertificate.tsx` | Finalizado |
-| **CON-24** | Eduardo Soto | Full-Stack | Chat y mensajería interna en tiempo real entre estudiante y empresa | `feature/CON-24-chat-tiempo-real` | `src/components/Chat/ChatRoom.tsx` | En curso |
-| **CON-25** | Yulitza Carrero | QA & CI | Pruebas de integración del flujo de postulación y selección | `feature/CON-25-pruebas-integracion` | Matriz de pruebas y reportes de prueba | En revisión |
-| **CON-26** | Fernanda Jaimes | Frontend | Sistema de notificaciones internas de estado de postulaciones | `feature/CON-26-notificaciones-internas` | `src/components/Notifications/NotificationBell.tsx` | Por hacer |
-| **CON-27** | Yulitza Carrero | QA & CI | Historial y seguimiento de proyectos completados | `feature/CON-27-historial-proyectos` | `src/pages/ProjectHistory.tsx` | Por hacer |
+| **CON-24** | Eduardo Soto | Full-Stack | Chat y mensajería interna en tiempo real entre estudiante y empresa | `feature/CON-24-chat-tiempo-real` | `src/pages/Messages.tsx` (`useMemo`/`useEffect` corregidos) | Finalizado |
+| **CON-25** | Yulitza Carrero | QA & CI | Pruebas de integración del flujo de postulación y selección | `feature/CON-25-pruebas-integracion` | `src/test/*.test.mjs` + `docs/pruebas/` | Finalizado |
+| **CON-26** | Fernanda Jaimes | Frontend | Sistema de notificaciones internas de estado de postulaciones | `feature/CON-26-notificaciones-internas` | `src/pages/Notifications.tsx` + índices | Finalizado |
+| **CON-27** | Yulitza Carrero | QA & CI | Historial y seguimiento de proyectos completados | `feature/CON-27-historial-proyectos` | `src/pages/Applications.tsx` + historial | Finalizado |
 
 ---
 
@@ -65,14 +65,14 @@
 
 | Clave Jira | Responsable | Rol | Resumen de la Actividad | Rama Git | Entregable en Código | Estado Jira |
 | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| **CON-28** | María José Gómez | Backend | Sistema de calificaciones y reseñas al cierre de proyecto | `feature/CON-28-calificaciones-resenas` | `src/components/Reviews/ReviewModal.tsx` | Por hacer |
-| **CON-29** | Fernanda Jaimes | Frontend | Módulo de ayuda y reporte de incidencias en proyectos | `feature/CON-29-modulo-ayuda-reportes` | `src/pages/SupportTicket.tsx` | Por hacer |
-| **CON-30** | María José Gómez | Backend | Optimización de consultas e índices en Cloud Firestore | `feature/CON-30-optimizacion-firestore` | `firestore.indexes.json` | Por hacer |
-| **CON-31** | Yulitza Carrero | QA & CI | Pruebas de interfaz y adaptabilidad en pantallas móviles y de escritorio | `feature/CON-31-pruebas-accesibilidad` | Reporte WCAG 2.1 y Lighthouse Audit | Por hacer |
-| **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-pruebas-e2e` | Suite E2E y matriz de validación | Por hacer |
-| **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `docs/DOSSIER_DISENO_DERS.md` | Por hacer |
-| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | Resultados de pruebas de usabilidad | Por hacer |
-| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-entrega-final-docs` | Release v1.2.0, Pitch Deck, Video Demo | Por hacer |
+| **CON-28** | María José Gómez | Backend | Sistema de calificaciones y reseñas al cierre de proyecto | `feature/CON-28-calificaciones-resenas` | `src/components/Reviews/ReviewModal.tsx` | Finalizado |
+| **CON-29** | Fernanda Jaimes | Frontend | Módulo de ayuda y reporte de incidencias en proyectos | `feature/CON-29-modulo-ayuda-reportes` | `src/components/Support/SupportModal.tsx` | Finalizado |
+| **CON-30** | María José Gómez | Backend | Optimización de consultas e índices en Cloud Firestore | `feature/CON-30-optimizacion-firestore` | `firestore.indexes.json` (7 índices compuestos) | Finalizado |
+| **CON-31** | Yulitza Carrero | QA & CI | Pruebas de interfaz y adaptabilidad en pantallas móviles y de escritorio | `feature/CON-31-pruebas-accesibilidad` | `.eslintrc.cjs` + `docs/ACCESIBILIDAD_WCAG.md` | Finalizado |
+| **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-pruebas-e2e` | Suite `node --test` (14/14 PASS) + Edge CDP (10/10) | Finalizado |
+| **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md` | En revisión |
+| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | Cuentas piloto `Usuarios_de_prueba` + `.dev_activity.log` | En curso |
+| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-entrega-final-docs` | `v1.2.0-qa-sprint3` (pendiente cierre final 30/11) | En curso |
 
 ---
 
