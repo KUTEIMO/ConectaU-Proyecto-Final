@@ -66,3 +66,19 @@ export const normalizeProjectStatus = (status: unknown): Project['status'] => {
   }
   return 'active';
 };
+
+/**
+ * Strips keys whose value is `undefined` before persisting to Firestore v10.
+ */
+export const omitUndefined = <T extends Record<string, unknown>>(payload: T): Partial<T> =>
+  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as Partial<T>;
+
+const INSTITUTIONAL_EMAIL_DOMAINS = ['.edu.co', '.edu', 'unisimon.edu.co', 'ufps.edu.co', 'udes.edu.co', 'unipamplona.edu.co'];
+
+export const isInstitutionalEmail = (email: string): boolean => {
+  const normalized = String(email || '').trim().toLowerCase();
+  const atIndex = normalized.indexOf('@');
+  if (atIndex <= 0) return false;
+  const domain = normalized.slice(atIndex + 1);
+  return INSTITUTIONAL_EMAIL_DOMAINS.some((suffix) => domain === suffix || domain.endsWith(suffix));
+};
