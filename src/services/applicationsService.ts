@@ -18,23 +18,26 @@ import { Application, Project, EscrowStage } from '../types';
 import { getProjectById, getProjects } from './projectsService';
 import { getUserData } from './authService';
 import { issueCertificate } from './certificatesService';
+import { omitUndefined } from '../utils/domainHelpers';
 
 const mapApplicationDoc = async (docSnapshot: any): Promise<Application> => {
   const data = docSnapshot.data();
-  const project = await getProjectById(data.projectId);
-  const student = await getUserData(data.userId || data.studentId);
+  const [project, student] = await Promise.all([
+    getProjectById(data.projectId).catch(() => null),
+    getUserData(data.userId || data.studentId).catch(() => null),
+  ]);
 
   return {
     id: docSnapshot.id,
-    studentId: data.userId || data.studentId,
-    studentName: student?.name,
-    studentPhoto: student?.photoUrl,
-    studentUniversity: student?.university,
-    studentCareer: student?.career,
-    studentSemester: student?.semester,
-    studentSkills: student?.skills,
+    studentId: data.studentId || data.userId,
+    studentName: student?.name || data.studentName || 'Estudiante ConectaU',
+    studentPhoto: student?.photoUrl || data.studentPhoto,
+    studentUniversity: student?.university || data.studentUniversity,
+    studentCareer: student?.career || data.studentCareer,
+    studentSemester: student?.semester || data.studentSemester,
+    studentSkills: student?.skills || data.studentSkills,
     projectId: data.projectId,
-    projectTitle: project?.title,
+    projectTitle: project?.title || data.projectTitle,
     status: data.status || 'pending',
     escrowStage: data.escrowStage || (data.status === 'completed' ? 'released' : data.status === 'accepted' ? 'in_progress' : 'deposited'),
     certificateId: data.certificateId,
@@ -42,10 +45,14 @@ const mapApplicationDoc = async (docSnapshot: any): Promise<Application> => {
     message: data.message,
     companyId: data.companyId || project?.companyId,
     companyName: data.companyName || project?.company?.name || 'Empresa Aliada ConectaU',
-    dateApplied: (data.appliedAt || data.dateApplied)?.toDate?.() || new Date(),
+    dateApplied: (data.appliedAt || data.dateApplied || data.createdAt)?.toDate?.() || new Date(),
     reviewedAt: data.reviewedAt?.toDate?.(),
     resumeUrl: data.resumeUrl,
     coverLetter: data.coverLetter,
+    deliverableUrl: data.deliverableUrl,
+    deliverableNotes: data.deliverableNotes,
+    deliverableSubmittedAt: data.deliverableSubmittedAt?.toDate?.(),
+    feedback: data.feedback,
   } as Application;
 };
 
@@ -81,15 +88,22 @@ const runApplicationsQuery = async (
 };
 
 const fetchApplicationsByField = (field: ApplicationField, value: string) =>
-  runApplicationsQuery([where(field, '==', value)], { orderByField: 'appliedAt', orderDirection: 'desc' });
+  runApplicationsQuery([where(field, '==', value)]).then(sortByDateApplied);
 
-const fetchApplicationsByProjectIds = async (projectIds: string[]): Promise<Application[]> => {
+const fetchApplicationsByProjectIds = async (
+  projectIds: string[],
+  companyId?: string
+): Promise<Application[]> => {
   if (projectIds.length === 0) return [];
   const chunkSize = 10;
   const chunkQueries: ReturnType<typeof getDocs>[] = [];
   for (let i = 0; i < projectIds.length; i += chunkSize) {
     const chunk = projectIds.slice(i, i + chunkSize);
-    chunkQueries.push(getDocs(query(applicationsCollection, where('projectId', 'in', chunk))));
+    const constraints: QueryConstraint[] = [where('projectId', 'in', chunk)];
+    if (companyId) {
+      constraints.push(where('companyId', '==', companyId));
+    }
+    chunkQueries.push(getDocs(query(applicationsCollection, ...constraints)));
   }
   const snapshots = await Promise.all(chunkQueries);
   const results: Application[] = [];
@@ -109,37 +123,30 @@ const mergeApplications = (...lists: Application[][]): Application[] => {
 };
 
 export const getApplicationsByStudent = async (studentId: string): Promise<Application[]> => {
-  const [userApps, legacyApps] = await Promise.all([
-    fetchApplicationsByField('userId', studentId),
-    fetchApplicationsByField('studentId', studentId),
-  ]);
-  return mergeApplications(userApps, legacyApps);
+  return fetchApplicationsByField('studentId', studentId);
 };
 
-export const getApplicationsByProject = async (projectId: string): Promise<Application[]> => {
-  return fetchApplicationsByField('projectId', projectId);
+export const getApplicationsByProject = async (
+  projectId: string,
+  companyId?: string
+): Promise<Application[]> => {
+  const constraints: QueryConstraint[] = [where('projectId', '==', projectId)];
+  if (companyId) {
+    constraints.push(where('companyId', '==', companyId));
+  }
+  return sortByDateApplied(await runApplicationsQuery(constraints));
 };
 
 export const checkExistingApplication = async (studentId: string, projectId: string): Promise<boolean> => {
-  const [currentSnapshot, legacySnapshot] = await Promise.all([
-    getDocs(
-      query(
-        applicationsCollection,
-        where('userId', '==', studentId),
-        where('projectId', '==', projectId),
-        limit(1)
-      )
-    ),
-    getDocs(
-      query(
-        applicationsCollection,
-        where('studentId', '==', studentId),
-        where('projectId', '==', projectId),
-        limit(1)
-      )
-    ),
-  ]);
-  return !currentSnapshot.empty || !legacySnapshot.empty;
+  const snapshot = await getDocs(
+    query(
+      applicationsCollection,
+      where('studentId', '==', studentId),
+      where('projectId', '==', projectId),
+      limit(1)
+    )
+  );
+  return !snapshot.empty;
 };
 
 export const getApplicationsByCompany = async (
@@ -151,7 +158,7 @@ export const getApplicationsByCompany = async (
     options?.projects ? Promise.resolve(options.projects) : getProjects({ companyId }),
   ]);
   const projectIds = projects.map((project) => project.id);
-  const appsByProject = await fetchApplicationsByProjectIds(projectIds);
+  const appsByProject = await fetchApplicationsByProjectIds(projectIds, companyId);
   return mergeApplications(appsByCompany, appsByProject);
 };
 
@@ -164,7 +171,7 @@ export const createApplication = async (
     throw new Error('Ya has postulado a esta vacante');
   }
 
-  const docRef = await addDoc(collection(db, 'applications'), {
+  const cleanPayload = omitUndefined({
     userId: application.studentId,
     studentId: application.studentId,
     projectId: application.projectId,
@@ -173,8 +180,11 @@ export const createApplication = async (
     resumeUrl: application.resumeUrl,
     coverLetter: application.coverLetter,
     status: 'pending',
+    escrowStage: 'deposited',
     appliedAt: serverTimestamp(),
-  });
+  } as Record<string, unknown>);
+
+  const docRef = await addDoc(collection(db, 'applications'), cleanPayload);
 
   // Incrementar contador de postulaciones en el proyecto
   try {
@@ -183,6 +193,7 @@ export const createApplication = async (
       const currentCount = projectDoc.data().applicationsCount || 0;
       await updateDoc(doc(db, 'projects', application.projectId), {
         applicationsCount: currentCount + 1,
+        updatedAt: serverTimestamp(),
       });
     }
   } catch (error) {
@@ -220,6 +231,7 @@ export const updateApplicationStatus = async (
   await updateDoc(doc(db, 'applications', applicationId), {
     status,
     reviewedAt: status !== 'pending' ? serverTimestamp() : null,
+    updatedAt: serverTimestamp(),
   });
   
   // Crear notificación para el estudiante
@@ -237,6 +249,7 @@ export const updateApplicationStatus = async (
           accepted: 'tu postulación fue aceptada',
           rejected: 'tu postulación fue rechazada',
           interview: 'tienes una entrevista programada',
+          completed: 'tu proyecto fue aprobado y culminado con certificado',
         };
         
         await addDoc(collection(db, 'notifications'), {
@@ -266,6 +279,25 @@ export const advanceApplicationMilestone = async (
     escrowStage: newStage,
     updatedAt: serverTimestamp(),
   });
+};
+
+/**
+ * Permite al estudiante adjuntar enlace y notas de entregable para pasar a revisión
+ */
+export const submitApplicationDeliverable = async (
+  applicationId: string,
+  params: { deliverableUrl: string; deliverableNotes?: string }
+) => {
+  await updateDoc(
+    doc(db, 'applications', applicationId),
+    omitUndefined({
+      deliverableUrl: params.deliverableUrl.trim(),
+      deliverableNotes: params.deliverableNotes?.trim() || '',
+      deliverableSubmittedAt: serverTimestamp(),
+      escrowStage: 'review',
+      updatedAt: serverTimestamp(),
+    })
+  );
 };
 
 /**

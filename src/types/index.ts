@@ -92,6 +92,9 @@ export interface Project {
   updatedAt?: Date;
   minExperience?: string;
   maxExperience?: string;
+  career?: string;
+  duration?: string;
+  deliverables?: string;
 }
 
 export interface Application {
@@ -116,6 +119,10 @@ export interface Application {
   escrowStage?: EscrowStage;
   certificateId?: string;
   companyName?: string;
+  deliverableUrl?: string;
+  deliverableNotes?: string;
+  deliverableSubmittedAt?: Date;
+  feedback?: string;
 }
 
 export interface Favorite {
@@ -138,7 +145,17 @@ export interface SavedProfile {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'application' | 'message' | 'system' | 'vacancy' | 'application_status' | 'new_job' | 'interview';
+  type:
+    | 'application'
+    | 'message'
+    | 'system'
+    | 'vacancy'
+    | 'application_status'
+    | 'new_job'
+    | 'interview'
+    | 'certificate_issued'
+    | 'review_received'
+    | 'support';
   title: string;
   message: string;
   isRead: boolean;
