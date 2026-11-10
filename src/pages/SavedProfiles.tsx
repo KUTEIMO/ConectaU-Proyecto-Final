@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookmarkCheck, MessageCircle, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -27,13 +27,7 @@ export default function SavedProfiles() {
   const [contacting, setContacting] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (userData?.id) {
-      loadProfiles();
-    }
-  }, [userData?.id]);
-
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     if (!userData?.id) return;
     setLoading(true);
     try {
@@ -54,7 +48,13 @@ export default function SavedProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userData?.id]);
+
+  useEffect(() => {
+    if (userData?.id) {
+      loadProfiles();
+    }
+  }, [userData?.id, loadProfiles]);
 
   const handleRemove = async (studentId: string) => {
     if (!userData?.id) return;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Conversation, Message } from '../types';
@@ -43,15 +43,14 @@ export default function Messages() {
         }
       }
 
-      if (!selectedConversation && data.length > 0) {
-        // Solo auto-seleccionar primera conversación en desktop
-        if (window.innerWidth >= 1024) {
-          setSelectedConversation(data[0]);
-        }
+      if (!data.length) return;
+      // Auto-seleccionar primera conversación en desktop si aún no hay selección activa
+      if (window.innerWidth >= 1024) {
+        setSelectedConversation((prev) => prev ?? data[0]);
       }
     });
     return () => unsubscribe();
-  }, [currentUser, requestedConversationId]);
+  }, [currentUser, requestedConversationId, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!selectedConversation) return;
@@ -63,7 +62,7 @@ export default function Messages() {
     return () => unsubscribe();
   }, [selectedConversation]);
 
-  const otherParticipantName = (conversation: Conversation) => {
+  const otherParticipantName = useCallback((conversation: Conversation) => {
     if (!currentUser) return 'Conversación';
     return (
       conversation.otherParticipant?.name ||
@@ -71,7 +70,7 @@ export default function Messages() {
       conversation.metadata?.jobTitle ||
       'Conversación'
     );
-  };
+  }, [currentUser]);
 
   const getInitials = (name?: string) => {
     if (!name) return 'CU';
@@ -128,13 +127,13 @@ export default function Messages() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleConversationSelect = (conversation: Conversation) => {
+  const handleConversationSelect = useCallback((conversation: Conversation) => {
     setSelectedConversation(conversation);
     // En móviles, mostrar el chat al seleccionar una conversación
     if (isMobile) {
       setShowChat(true);
     }
-  };
+  }, [isMobile]);
 
   const handleBackToList = () => {
     setShowChat(false);
@@ -201,7 +200,7 @@ export default function Messages() {
         })}
       </div>
     );
-  }, [conversations, loadingConversations, selectedConversation]);
+  }, [conversations, loadingConversations, selectedConversation, handleConversationSelect, otherParticipantName]);
 
   if (!currentUser) {
     return (
