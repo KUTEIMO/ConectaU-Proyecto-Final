@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Bell, LogOut, Menu } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { logout } from '../../services/authService';
 import { getUnreadCount } from '../../services/notificationsService';
@@ -14,16 +14,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadUnreadCount();
-      // Actualizar cada 30 segundos
-      const interval = setInterval(loadUnreadCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [currentUser]);
-
-  const loadUnreadCount = async () => {
+  const loadUnreadCount = useCallback(async () => {
     if (!currentUser) return;
     try {
       const count = await getUnreadCount(currentUser.uid);
@@ -31,7 +22,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
     } catch (error) {
       console.error('Error loading unread count:', error);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadUnreadCount();
+      // Actualizar cada 30 segundos
+      const interval = setInterval(loadUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, loadUnreadCount]);
 
   const handleLogout = async () => {
     try {

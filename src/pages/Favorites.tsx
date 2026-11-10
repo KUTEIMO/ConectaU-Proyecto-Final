@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Briefcase, MapPin, DollarSign, Clock, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -11,13 +11,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<(Favorite & { project?: Project })[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadFavorites();
-    }
-  }, [currentUser]);
-
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     if (!currentUser) return;
     try {
       const favs = await getFavorites(currentUser.uid);
@@ -33,7 +27,13 @@ export default function Favorites() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadFavorites();
+    }
+  }, [currentUser, loadFavorites]);
 
   const handleRemove = async (projectId: string) => {
     if (!currentUser) return;
