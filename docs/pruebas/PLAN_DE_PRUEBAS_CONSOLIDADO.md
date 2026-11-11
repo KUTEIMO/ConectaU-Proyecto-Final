@@ -12,10 +12,10 @@
 | Dimensión QA | Comando / Entorno | Resultado Verificado | Evidencia |
 | :--- | :--- | :--- | :--- |
 | **Análisis Estático ESLint** | `npm run lint` (`--max-warnings 0`) | **0 errores, 0 warnings** | Todas las vistas/servicios React/TS saneados |
-| **Suite Unitaria, Seguridad y UI** | `npm test` (`ConectaU-web`) | **20/20 PASS** (597.2 ms) | `domain.validators`, `firebase.security`, `ui.contracts` |
-| **Suite Cloud Functions** | `npm test` (`ConectaU-app/functions`) | **4/4 PASS** (294.4 ms) | 4 triggers/callables reales en Node 22 |
-| **Build Productivo** | `npm run build:prod` | **PASS** (1.446 módulos, 8.91 s) | Bundle `index-BXL_jtpd.js` con `.env.production` |
-| **Despliegue Firebase** | `deploy --only firestore:rules,firestore:indexes,hosting` | **COMPLETADO** | Reglas RBAC + 7 índices + Hosting live (`Storage` pendiente activación en Consola) |
+| **Suite Unitaria, Seguridad y UI** | `npm test` (`ConectaU-web`) | **20/20 PASS** (1.39 s) | `domain.validators`, `firebase.security` (Spark `$0`), `ui.contracts` |
+| **Suite Cloud Functions** | `npm test` (`ConectaU-app/functions`) | **4/4 PASS** (474 ms) | 4 triggers/callables reales en Node 22 |
+| **Build Productivo** | `npm run build:prod` | **PASS** (1.444 módulos, 19.21 s) | Bundle `index-Dq9viC4j.js` (990.81 kB) con `.env.production` |
+| **Despliegue Firebase** | `deploy --only firestore:rules,firestore:indexes,hosting` | **COMPLETADO** | Reglas RBAC + 7 índices + Hosting live (100 % Spark Free `$0`, sin Storage Blaze) |
 | **Pruebas E2E Live Multi-Rol** | Edge Headless CDP sobre `https://conectau-be1a2.web.app` | **21/21 PASS** (`0` console.error) | Público, Estudiante, Empresa, Administrador y Móvil 390px |
 
 ## 2. Actas Individuales (Entrega 13 de Noviembre de 2026)
