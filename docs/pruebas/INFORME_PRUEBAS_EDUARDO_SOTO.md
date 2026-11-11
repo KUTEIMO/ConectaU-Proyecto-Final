@@ -32,7 +32,7 @@ Como Líder de Producto y responsable de la arquitectura integral de ConectaU, e
 | CP-CF-03/04 (CON-14) | Seguridad Functions | Ejecución de CF-03 (adminUpdateUserPassword) y CF-04 (onAdminPasswordRequest) con rol admin e intruso. | Rechazo permission-denied para no-admins y status='error' ante intento no autorizado. | Aprobado (2.64 ms / 0.51 ms). |
 | CP-EMP-01 (CON-13) | RF06 Empresa | Login vivo con cuenta Empresa Zona Franca Cúcuta -> /vacancies -> Postulaciones. | Visualización de postulantes reales, botones Entrevista/Aceptar/Rechazar y tracker Escrow. | Aprobado (5.16 s). Confirmada visibilidad de Lissette Cárdenas y Eduardo Soto sin errores. |
 | CP-ADM-01 (CON-14) | RF08 Admin | Login vivo con cuenta Administrador admin@conectau.dev -> /admin. | Conteos globales reales (28 usuarios, 10 vacantes, 16 postulaciones) y cola de verificación. | Aprobado (0 errors). Reglas firestore.rules actualizadas para otorgar lectura/curaduría al Admin. |
-| CP-BLD-01 (CON-35) | RNF04 / CI | Ejecución integral final de npm run lint && npm test && npm run build:prod tras todos los cambios. | 0 errores/warnings ESLint, 20/20 Web PASS, 4/4 Functions PASS y build productivo limpio. | Aprobado. Build productivo de 1.446 módulos en 8.91 s desplegado en conectau-be1a2.web.app. |
+| CP-BLD-01 (CON-35) | RNF04 / CI | Ejecución integral final de npm run lint && npm test && npm run build:prod tras todos los cambios. | 0 errores/warnings ESLint, 20/20 Web PASS, 4/4 Functions PASS y build productivo limpio. | Aprobado. Build productivo de 1.444 módulos en 19.21 s desplegado en conectau-be1a2.web.app. |
 
 ## 3. Validación Multi-Rol
 - **Validación E2E Rol Estudiante en Vivo (conectau-be1a2.web.app):** Ingresando con eduardo.soto@lab.unisimon.edu.co, se recorrió /app, /jobs, /applications (verificando Fase 4/4 de Product Owner Bienestar Digital y abriendo modal Soporte/PQRS), /messages (conversación real con CENS) y /profile (insignia Verificado, reputación 5.0 (1) y certificados emitidos).
@@ -50,18 +50,18 @@ Como Líder de Producto y responsable de la arquitectura integral de ConectaU, e
 $ cd ConectaU-web && npm run lint && npm test && npm run build:prod
 > eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0   (0 errors, 0 warnings)
 > node --test src/test/*.test.mjs
-  Domain & Validators (RF01-RF11):  7/7 PASS (CP-U01..CP-U07, 11.02 ms)
-  Firebase Security Rules & Indexes: 7/7 PASS (CP-S01..CP-S07, 9.22 ms)
-  Frontend Routes & UI Contracts:    6/6 PASS (CP-UI01..CP-UI06, 6.68 ms)
-  TOTAL WEB AUTOMATED: 20/20 PASS | 0 FAIL | 0 SKIP | 934.6 ms
+  Domain & Validators (RF01-RF11):  7/7 PASS (CP-U01..CP-U07, 2.27..5.62 ms)
+  Firebase Security Rules & Indexes: 7/7 PASS (CP-S01..CP-S07, 9.18 ms)
+  Frontend Routes & UI Contracts:    6/6 PASS (CP-UI01..CP-UI06, 8.01 ms)
+  TOTAL WEB AUTOMATED: 20/20 PASS | 0 FAIL | 0 SKIP | 1397.70 ms
 > vite build --mode production
-  1446 modules transformed -> dist/assets/index-CtsSnACY.js (1,009.09 kB | gzip 244.31 kB) in 17.10s
+  1444 modules transformed -> dist/assets/index-Dq9viC4j.js (990.81 kB | gzip 240.15 kB) in 19.21s
 
 $ cd ConectaU-app/functions && npm test
 > node --test test/functions.test.js
-  PASS CF-01: onApplicationCreate increments project applicationsCount & emits isRead notifications (2.00 ms)
-  PASS CF-02: onApplicationStatusChange notifies student on completed cert & skips no-ops (0.58 ms)
-  PASS CF-03: adminUpdateUserPassword rejects non-admin/short pass & updates Auth for admins (2.64 ms)
-  PASS CF-04: onAdminPasswordRequest processes authorized admin requests & rejects intruders (0.51 ms)
-  TOTAL CLOUD FUNCTIONS: 4/4 PASS | 0 FAIL | 294.4 ms
+  PASS CF-01: onApplicationCreate increments project applicationsCount & emits isRead notifications (2.31 ms)
+  PASS CF-02: onApplicationStatusChange notifies student on completed cert & skips no-ops (1.07 ms)
+  PASS CF-03: adminUpdateUserPassword rejects non-admin/short pass & updates Auth for admins (4.71 ms)
+  PASS CF-04: onAdminPasswordRequest processes authorized admin requests & rejects intruders (0.84 ms)
+  TOTAL CLOUD FUNCTIONS: 4/4 PASS | 0 FAIL | 474.35 ms
 ```
