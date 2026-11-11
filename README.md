@@ -12,7 +12,7 @@
 
 **Plataforma web colaborativa que conecta a estudiantes universitarios de Cúcuta con MIPYMES y emprendimientos locales para el desarrollo de proyectos formativos con compensación y evidencia certificable.**
 
-[🌐 Ver Aplicación en Producción](https://conectau-be1a2.web.app) • [📋 Tablero Jira](https://conectau.atlassian.net) • [📄 Dossier de Diseño (DERS)](docs/DOSSIER_DISENO_DERS.md) • [📊 Matriz de Asignación](docs/MATRIZ_ASIGNACION_RESPONSABILIDADES.md) • [🧪 Evidencias Plan de Pruebas](docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md)
+[🌐 Ver Aplicación en Producción](https://conectau-be1a2.web.app) • [📋 Tablero Jira](https://conectau.atlassian.net) • [📄 Dossier de Diseño (DERS)]([docs/DOSSIER_DISENO_DERS.md](https://unisimonedu-my.sharepoint.com/:w:/g/personal/e_soto2_unisimon_edu_co/IQAT9kWqlPUgS7qiTdEYdDctAdHDy8D1awNQquA-uiaU3sc?e=VpzrEB)) • [📊 Matriz de Asignación]([docs/MATRIZ_ASIGNACION_RESPONSABILIDADES.md](https://unisimonedu-my.sharepoint.com/:w:/g/personal/e_soto2_unisimon_edu_co/IQB4ZUuIbFFUSJpAYtUY-Ld7AV3Gkq2AzwZTZJzxN5EMna8?e=vnopoQ)) • [🧪 Evidencias Plan de Pruebas](docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md)
 
 </div>
 
