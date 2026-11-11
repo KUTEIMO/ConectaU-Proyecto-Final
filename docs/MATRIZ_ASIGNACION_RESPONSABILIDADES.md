@@ -71,8 +71,8 @@
 | **CON-31** | Yulitza Carrero | QA & CI | Pruebas de interfaz y adaptabilidad en pantallas móviles y de escritorio | `feature/CON-31-pruebas-accesibilidad` | `.eslintrc.cjs` + `docs/ACCESIBILIDAD_WCAG.md` | Finalizado |
 | **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-validacion-spark-free` | Suite Web `20/20` + Functions `4/4` + Edge CDP `21/21` | Finalizado |
 | **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `DOSSIER_DISENO_DERS.md` + `PLAN_DE_PRUEBAS_CONSOLIDADO.md` | Finalizado |
-| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | UAT multi-rol 21/21 + PR listo para merge en vivo | En revisión |
-| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-readme-svg-spark-free` | `v1.3.1-spark-free` en producción (pendiente cierre 30/11) | En curso |
+| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | Acta UAT final y checklist aprobado (`100% Spark Free`) | Finalizado |
+| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-readme-svg-spark-free` | Release productivo `v1.3.1-spark-free` en `conectau-be1a2.web.app` | Finalizado |
 
 ---
 
