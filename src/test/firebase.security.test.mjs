@@ -7,7 +7,7 @@ const ROOT = path.resolve(import.meta.dirname, '../..');
 
 describe('ConectaU Firebase Security Rules, RBAC Hardening, Append-Only & Indexes Audit (RNF02)', () => {
   const rules = fs.readFileSync(path.join(ROOT, 'firestore.rules'), 'utf8');
-  const storageRules = fs.readFileSync(path.join(ROOT, 'storage.rules'), 'utf8');
+  const firebaseConfigTs = fs.readFileSync(path.join(ROOT, 'src/config/firebase.ts'), 'utf8');
   const indexesRaw = fs.readFileSync(path.join(ROOT, 'firestore.indexes.json'), 'utf8');
   const firebaseJsonRaw = fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8');
   const gitignore = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
@@ -39,12 +39,13 @@ describe('ConectaU Firebase Security Rules, RBAC Hardening, Append-Only & Indexe
     assert.match(certSectionMatch[1], /allow\s+update,\s*delete:\s*if\s+false\s*;/);
   });
 
-  it('CP-S03: requires authentication and participant membership for conversations, messages, and scoped storage', () => {
+  it('CP-S03: requires authentication and participant membership for conversations and enforces 100% Spark Free architecture without Blaze Storage', () => {
+    const fb = JSON.parse(firebaseJsonRaw);
     assert.match(rules, /match \/conversations\/\{conversationId\}/);
     assert.match(rules, /request\.auth\.uid in resource\.data\.participants/);
-    assert.match(storageRules, /request\.auth != null/);
-    assert.match(storageRules, /request\.auth\.uid == userId/);
-    assert.match(storageRules, /10 \* 1024 \* 1024/);
+    assert.equal(fb.storage, undefined, 'firebase.json must not configure paid Firebase Storage');
+    assert.doesNotMatch(firebaseConfigTs, /firebase\/storage|getStorage\(/, 'firebase.ts must not initialize paid Storage SDK');
+    assert.match(rules, /deliverableUrl/);
   });
 
   it('CP-S04: blocks admin self-escalation on /users create and prevents student self-verification', () => {

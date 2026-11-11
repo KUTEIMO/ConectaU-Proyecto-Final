@@ -14,7 +14,7 @@
 | `scripts/generate_credentials.js` | Exporta `CREDENCIALES_DESARROLLO.*` con los usuarios semilla (admin, compañías, estudiantes). | Ejecútalo cada vez que cambie la lista de cuentas de prueba. Compártelo externamente con precaución. |
 | `scripts/backfill-conversations.js` | Revisa todas las conversaciones y crea un mensaje en `conversations/{id}/messages` si aún no existe. | Ejecuta `npm run seed:conversations`. Requiere `GOOGLE_APPLICATION_CREDENTIALS` apuntando al service account del proyecto. |
 
-En el lado web, todas las pantallas usan las mismas colecciones. No hay API distinta: interactuamos directamente con Firestore usando los SDKs oficiales (`firebase/auth`, `firebase/firestore`, `firebase/storage` cuando aplica).
+En el lado web, todas las pantallas usan las mismas colecciones. No hay API distinta: interactuamos directamente con Firestore usando los SDKs oficiales gratuitos (`firebase/auth` y `firebase/firestore`, persistiendo enlaces HTTPS externos para hojas de vida y entregables en lugar de Storage Blaze).
 
 ---
 
