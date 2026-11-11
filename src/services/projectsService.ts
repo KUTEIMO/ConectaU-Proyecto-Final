@@ -13,7 +13,7 @@ import {
 import { db } from '../config/firebase';
 import { Project } from '../types';
 import { DEFAULT_CITY } from '../constants/geo';
-import { normalizeProjectStatus, normalizeProjectType } from '../utils/domainHelpers';
+import { normalizeProjectStatus, normalizeProjectType, omitUndefined } from '../utils/domainHelpers';
 
 const sortProjectsByDate = (projects: Project[]) =>
   projects.sort(
@@ -73,6 +73,8 @@ export const getProjects = async (filters?: ProjectFilters): Promise<Project[]> 
     // Compatibilidad con documentos que almacenan el id en company.id
     const altConstraints = query(collectionRef, where('company.id', '==', filters.companyId));
     snapshots.push(await getDocs(altConstraints));
+  } else if (filters?.status === 'active') {
+    snapshots.push(await getDocs(query(collectionRef, where('status', '==', 'active'))));
   } else {
     snapshots.push(await getDocs(collectionRef));
   }
@@ -115,21 +117,25 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
 };
 
 export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'applicationsCount'>) => {
-  const docRef = await addDoc(collection(db, 'projects'), {
+  const cleanCompany = omitUndefined(project.company as Record<string, unknown>);
+  const cleanProject = omitUndefined({
     ...project,
+    company: cleanCompany,
     applicationsCount: 0,
     location: project.location || DEFAULT_CITY,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  } as Record<string, unknown>);
+  const docRef = await addDoc(collection(db, 'projects'), cleanProject);
   return docRef.id;
 };
 
 export const updateProject = async (projectId: string, updates: Partial<Project>) => {
-  await updateDoc(doc(db, 'projects', projectId), {
+  const cleanUpdates = omitUndefined({
     ...updates,
     updatedAt: serverTimestamp(),
-  });
+  } as Record<string, unknown>);
+  await updateDoc(doc(db, 'projects', projectId), cleanUpdates);
 };
 
 export const deleteProject = async (projectId: string) => {

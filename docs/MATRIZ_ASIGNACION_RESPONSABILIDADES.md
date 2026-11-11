@@ -72,7 +72,7 @@
 | **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-pruebas-e2e` | Suite `node --test` (14/14 PASS) + Edge CDP (10/10) | Finalizado |
 | **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md` | En revisión |
 | **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | Cuentas piloto `Usuarios_de_prueba` + `.dev_activity.log` | En curso |
-| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-entrega-final-docs` | `v1.2.0-qa-sprint3` (pendiente cierre final 30/11) | En curso |
+| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-entrega-final-docs` | `v1.3.0-prod-verified` (pendiente cierre final 30/11) | En curso |
 
 ---
 

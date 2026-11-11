@@ -40,11 +40,13 @@ export const createUserWithRole = async ({
     await setDoc(
       doc(db, 'users', credential.user.uid),
       {
+        id: credential.user.uid,
         name,
         email,
         role,
         isActive: true,
         isVerified: role !== 'student',
+        isPublic: role === 'student',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         ...metadata,

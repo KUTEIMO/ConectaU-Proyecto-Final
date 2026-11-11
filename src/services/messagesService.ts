@@ -135,8 +135,8 @@ export const listenMessages = (
           rootUnsubscribe();
           rootUnsubscribe = null;
         }
-      } else if (!preferredSource) {
-        ensureRootListener();
+      } else {
+        callback([]);
       }
     },
     (error) => {
@@ -144,8 +144,6 @@ export const listenMessages = (
       ensureRootListener();
     }
   );
-
-  ensureRootListener();
 
   return () => {
     if (subUnsubscribe) subUnsubscribe();
@@ -178,6 +176,7 @@ export const sendMessage = async (
   const payload = {
     conversationId,
     senderId,
+    receiverId: receiverId || null,
     senderName: senderName || null,
     senderPhoto: senderPhoto || null,
     text: message,
