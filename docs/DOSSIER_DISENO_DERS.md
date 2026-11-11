@@ -94,7 +94,7 @@ OE1 (Requisitos & Modelo de Dominio): Identificar y especificar los requisitos t
 
 OE2 (Arquitectura de Software & Modelo C4): Diseñar la arquitectura de software multiplataforma de ConectaU aplicando el modelo C4 (Contexto, Contenedores, Componentes y Código) y modelar la base de datos NoSQL en Cloud Firestore, garantizando la consistencia, desacoplamiento y seguridad de acceso por roles (RBAC).
 
-OE3 (Construcción & Multiplataforma): Desarrollar e integrar los componentes de software de la solución multiplataforma, implementando el cliente móvil en Flutter para estudiantes, el portal web en React para empresas y administración, y los servicios backend serverless en Firebase (Authentication, Cloud Firestore, Storage y Hosting).
+OE3 (Construcción & Multiplataforma): Desarrollar e integrar los componentes de software de la solución multiplataforma, implementando el cliente móvil en Flutter para estudiantes, el portal web en React para empresas y administración, y los servicios backend serverless gratuitos en Firebase Spark (Authentication, Cloud Firestore y Hosting, con evidencias/portafolios por URLs HTTPS verificadas).
 
 OE4 (Validación, Calidad & Pruebas con Usuarios): Validar y evaluar el funcionamiento integral de la plataforma mediante la ejecución del plan de pruebas de software y sesiones de prueba controladas con usuarios de la comunidad universitaria de Cúcuta, verificando el cumplimiento de la matriz de criterios de aceptación y la efectividad operativa de la solución.
 
@@ -182,7 +182,7 @@ R02. Alcance académico y geográfico: La solución se enfoca inicialmente en co
 
 R03. Integración institucional: La verificación académica puede ser parcial o simulada en el MVP. La integración mediante API o webhooks con los sistemas de las universidades se reserva para una fase posterior.
 
-R04. Plataformas y stack tecnológico: El desarrollo se restringe al uso de Flutter/Dart para la aplicación móvil (distribuida inicialmente en formato APK para Android, quedando iOS en estado pendiente), React y Node.js para la plataforma web empresarial/administrativa, y Firebase (Auth, Firestore, Storage, Hosting) como backend unificado.
+R04. Plataformas y stack tecnológico: El desarrollo se restringe al uso de Flutter/Dart para la aplicación móvil (distribuida inicialmente en formato APK para Android, quedando iOS en estado pendiente), React y Node.js para la plataforma web empresarial/administrativa, y Firebase Spark Free Tier (Auth, Cloud Firestore y Hosting, sin dependencia de Storage pago Blaze) como backend unificado.
 
 R05. Contratación: La plataforma se orienta a proyectos específicos y trabajos parciales; no contempla como objetivo inicial la contratación laboral formal de largo plazo.
 
@@ -254,7 +254,7 @@ Actor Administrador: Accede al módulo web administrativo para supervisar la cal
 
 Sistema Central ConectaU: Plataforma distribuida que unifica la oferta y demanda de proyectos académicos.
 
-Sistemas Externos: Google Firebase Authentication (gestión de identidad OAuth/JWT), Google Cloud Firestore (persistencia reactiva), Google Firebase Storage (almacenamiento de archivos/hojas de vida) y Google Firebase Hosting (distribución de la SPA mediante CDN).
+Sistemas Externos: Google Firebase Authentication (gestión de identidad OAuth/JWT), Google Cloud Firestore (persistencia reactiva y enlaces HTTPS de hojas de vida/entregables) y Google Firebase Hosting (distribución de la SPA mediante CDN en capa gratuita Spark).
 
 B. Modelo C4 - Nivel 2: Diagrama de Contenedores
 
@@ -268,14 +268,14 @@ El Nivel 2 desglosa la solución en sus contenedores ejecutables autónomos y al
 
 4. Cloud Firestore Database: Base de datos NoSQL distribuida multirregión con sincronización reactiva en tiempo real y validación de reglas de acceso en el servidor.
 
-5. Firebase Cloud Storage: Almacenamiento de objetos binarios (imágenes de perfil, logos de empresas y documentos de portafolio/PDFs).
+5. Gestión de Evidencias y Portafolios (100 % Spark Free Tier): Persistencia de enlaces HTTPS verificados (GitHub, Figma, Google Drive) dentro de Cloud Firestore bajo reglas RBAC, evitando el costo obligatorio del plan Blaze requerido por Firebase Storage.
 
 C. Modelo C4 - Nivel 3: Diagrama de Componentes
 
 El Nivel 3 desglosa los componentes internos que constituyen cada uno de los contenedores principales del sistema:
 • Componentes de la Aplicación Móvil (Flutter): Capa de Presentación (auth_screen, home_job_listings, job_details, vacancy_applications), Capa de Proveedores de Estado (auth_provider, theme_provider), Capa de Servicios (firebase_auth_service, firestore_service) y Capa de Modelos (project_model, user_profile_model).
 • Componentes del Portal Web (React SPA): Componente de Autenticación (Login, Register), Componente de Vacantes (Vacancies, CreateVacancy, JobDetail), Componente de Postulaciones (Applications, ViewApplications), Componente de Custodia y Certificación (EscrowTracker, CertificateModal), Componente de Mensajería (messagesService) y Panel de Control Administrativo (Admin, AdminVacancies).
-• Componentes de Infraestructura Backend (Firebase Services): Servicios desacoplados de autenticación JWT, base de datos NoSQL Cloud Firestore, almacenamiento de objetos binarios en Storage y motor de reglas de seguridad en servidor.
+• Componentes de Infraestructura Backend (Firebase Services): Servicios desacoplados de autenticación JWT, base de datos NoSQL Cloud Firestore, validación de URLs de portafolio/entregables y motor de reglas RBAC en servidor.
 
 Ilustración 5.2: Modelo C4 - Nivel 3 (Componentes de Infraestructura Backend Firebase)
 

@@ -39,23 +39,8 @@ service cloud.firestore {
 }
 ```
 
-#### Storage Security Rules
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /users/{userId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    match /companies/{companyId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == companyId;
-    }
-  }
-}
-```
+#### Persistencia de Portafolios y Entregables (100 % Spark Free Tier)
+ConectaU opera íntegramente en el plan gratuito Firebase Spark (`$0 USD`), evitando servicios que exigen facturación Blaze como Cloud Storage. Los enlaces de hojas de vida (`resumeUrl`), portafolios (`portfolioUrl`) y evidencias de proyectos (`deliverableUrl`) se almacenan como URLs HTTPS verificadas en Cloud Firestore bajo validación de propietario autenticado en `firestore.rules`.
 
 ### 3. Validación de Entrada
 
@@ -74,7 +59,7 @@ service firebase.storage {
 #### Checklist antes de deploy:
 - [ ] Variables de entorno configuradas en el hosting
 - [ ] Reglas de Firestore revisadas y ajustadas
-- [ ] Reglas de Storage configuradas
+- [x] Reglas RBAC y Append-Only de Firestore configuradas (`firestore.rules`, Spark Free Tier sin Storage Blaze)
 - [ ] Dominios autorizados en Firebase Console
 - [ ] Métodos de autenticación habilitados correctamente
 - [ ] `.env` NO está en el repositorio

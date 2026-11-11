@@ -4,7 +4,7 @@
 > **Asignatura:** Proyecto Final de Diseño de Ingeniería de Sistemas (9º Semestre — 2026-2)  
 > **Docente Titular:** Ing. Jover Alonso  
 > **Institución:** Universidad Simón Bolívar (Sede Cúcuta)  
-> **Última Actualización:** 10 de noviembre de 2026  
+> **Última Actualización:** 11 de noviembre de 2026  
 > **Estado:** 100% Sincronizado con Jira Cloud (`CON`) y GitHub Flow
 
 ---
@@ -40,7 +40,7 @@
 | **CON-14** | Eduardo Soto | Full-Stack | Panel web de administración y métricas generales | `feature/CON-14-panel-admin-metricas` | `src/pages/Admin.tsx` | Finalizado |
 | **CON-15** | María José Gómez | Backend | Curaduría y moderación de proyectos desde el panel de administración | `feature/CON-15-curaduria-proyectos` | `src/services/moderationService.ts` | Finalizado |
 | **CON-16** | María José Gómez | Backend | Reglas de seguridad en Cloud Firestore (firestore.rules) | `feature/CON-16-reglas-firestore` | `firestore.rules` (RBAC) | Finalizado |
-| **CON-17** | María José Gómez | Backend | Almacenamiento de archivos y fotos de perfil en Cloud Storage | `feature/CON-17-storage-archivos` | `storage.rules`, storage service | Finalizado |
+| **CON-17** | María José Gómez | Backend | Gestión de portafolios y entregables HTTPS en Firestore (Spark `$0`, sin Storage Blaze) | `feature/CON-17-storage-archivos` | `firestore.rules` + URLs HTTPS en Firestore | Finalizado |
 | **CON-18** | Yulitza Carrero | QA & CI | Pruebas unitarias de modelos y validadores | `feature/CON-18-pruebas-unitarias` | Test suites y scripts de validación | Finalizado |
 | **CON-19** | Yulitza Carrero | QA & CI | Despliegue y publicación continua en Firebase Hosting | `feature/CON-19-ci-cd-firebase-hosting` | `firebase.json`, deploy en producción | Finalizado |
 

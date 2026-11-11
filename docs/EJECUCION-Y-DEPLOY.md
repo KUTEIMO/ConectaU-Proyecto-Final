@@ -21,7 +21,7 @@ cp env.production.example .env
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=conectau-be1a2.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=conectau-be1a2
-VITE_FIREBASE_STORAGE_BUCKET=conectau-be1a2.firebasestorage.app
+# No requerido en Spark Free Tier ($0) — portafolios y entregables por URL HTTPS en Firestore
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_DATABASE_URL=
@@ -58,8 +58,8 @@ firebase use conectau-be1a2
 | Comando | Qué despliega |
 |---------|----------------|
 | `npm run deploy` | Hosting (`dist/`) |
-| `npm run deploy:all` | Hosting + reglas Firestore + Storage |
-| `npm run deploy:rules` | Solo `firestore.rules` y `storage.rules` |
+| `npm run deploy:all` | Hosting + reglas e índices Firestore (Spark `$0`) |
+| `npm run deploy:rules` | Solo `firestore.rules` y `firestore.indexes.json` |
 | `npm run deploy:full` | Script PowerShell `scripts/deploy-produccion.ps1` |
 
 Antes de producción: `npm run pre-deploy` (verificación con `scripts/verificar-pre-deploy.ps1`).
