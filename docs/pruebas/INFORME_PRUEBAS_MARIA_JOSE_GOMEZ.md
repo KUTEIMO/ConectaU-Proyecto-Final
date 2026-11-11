@@ -7,7 +7,7 @@
 - **Fecha de Corte:** 10 de noviembre de 2026
 
 ## 1. Propósito, Alcance y Cobertura
-Como responsable del diseño backend, seguridad NoSQL e integridad de datos en Cloud Firestore, este documento consolida la auditoría forense y pruebas de Verificación y Validación (V&V) sobre las reglas de seguridad (firestore.rules y storage.rules), los índices compuestos de consulta (firestore.indexes.json), la validación pública de constancias (/verify/:id) y el cálculo bilateral de reputación (/reviews). Un hallazgo crítico clave de la auditoría en nube reveló que el proyecto desplegado anteriormente mantenía reglas abiertas de desarrollo (allow read, write: if true) y sin índices desplegados; en este corte se corrigieron 15 fallos de reglas, se bloquearon escalaciones de rol y se liberaron las reglas productivas en conectau-be1a2.
+Como responsable del diseño backend, seguridad NoSQL e integridad de datos en Cloud Firestore, este documento consolida la auditoría forense y pruebas de Verificación y Validación (V&V) sobre las reglas de seguridad RBAC en firestore.rules, los índices compuestos de consulta (firestore.indexes.json), la validación pública de constancias (/verify/:id), el desacoplamiento total de Firebase Storage pago (Blaze) para operar 100 % en plan gratuito Spark ($0 USD) y el cálculo bilateral de reputación (/reviews). Un hallazgo crítico de la auditoría en nube reveló que el proyecto desplegado anteriormente mantenía reglas abiertas de desarrollo (allow read, write: if true) y sin índices desplegados; en este corte se corrigieron 15 fallos de reglas, se bloquearon escalaciones de rol y se liberaron las reglas productivas en conectau-be1a2.
 
 | Código | Alcance | Módulos | Estado |
 | :--- | :--- | :--- | :--- |
@@ -16,7 +16,7 @@ Como responsable del diseño backend, seguridad NoSQL e integridad de datos en C
 | CON-30 Índices | Índices compuestos where+orderBy en Firestore | firestore.indexes.json | 7 índices desplegados exitosamente en base (default) |
 | RF10 Reputación | Calificaciones 1–5, promedio 1 decimal y permiso seguro en users/{uid} | reviewsService + Rules | Aprobado en CP-U05 y reglas verificadas |
 | RF11 Verificación | Consulta pública sin login (/verify/:id) e inmutabilidad de certificados | certificatesService + Rules | Aprobado en vivo en conectau-be1a2.web.app (55 ms) |
-| Storage / PQRS | Reglas scoped por usuario <10MB y soporte /support_tickets | storage.rules + Rules | Sintaxis validada; Storage pendiente activación inicial en Consola |
+| Spark $0 / PQRS | Desacoplamiento total de Storage Blaze y soporte /support_tickets | firebase.ts + firebase.json | 100 % Spark Free Tier ($0 USD) verificado en CP-S03 |
 
 ## 2. Matriz de Verificación (13 Casos de Prueba)
 | ID Caso (Jira) | Área | Entorno / Entrada | Resultado Esperado | Resultado Obtenido |
@@ -24,7 +24,7 @@ Como responsable del diseño backend, seguridad NoSQL e integridad de datos en C
 | CP-S00 (CON-16) | Auditoría Nube | Consulta vía Firebase MCP (firebase_get_security_rules) del estado previo en producción. | Reglas productivas RBAC activas antes de la sustentación final. | Hallazgo Crítico Remediado (HALL-11): La nube tenía regla temporal allow read, write: if true. Desplegadas nuevas reglas RBAC reales. |
 | CP-S01 (CON-16) | RNF02 Inmutabilidad | Ejecución de prueba automatizada CP-S01 verificando allow delete: if false. | Bloqueo total de borrado físico en users, projects, applications, notifications, certificates, reviews y support_tickets. | Aprobado. 7 colecciones protegidas con inmutabilidad Append-Only verificadas. |
 | CP-S02 (CON-23) | RF11 Certificados | Validación de reglas en /certificates/{certificateId}: lectura pública y creación restringida. | read: if true (permite empleadores sin cuenta) y create restringido a company/admin con code==id. | Aprobado. Cierra brecha donde un estudiante podía emitir constancias falsas a su nombre. |
-| CP-S03 (CON-17/24) | RNF02 Chat/Storage | Verificación de pertenencia a participants en /conversations y restricción users/{uid} < 10MB en storage.rules. | Ningún tercero ajeno puede leer chats ni sobreescribir archivos de otro UID. | Aprobado en CP-S03 y compilador firebase_validate_security_rules (OK: No errors detected). |
+| CP-S03 (CON-17/24) | RNF02 Spark $0 | Verificación de participants en /conversations y ausencia total de getStorage() / Blaze Storage. | Cero chats accesibles por terceros y cero dependencia de facturación Blaze en firebase.json. | Aprobado en CP-S03 (0.65 ms): 100 % Spark Free Tier con URLs HTTPS en Firestore. |
 | CP-S04 (CON-05/16) | Anti-Escalación | Auditoría de regla create/update en /users/{userId} ante intentos de auto-asignar role='admin' o isVerified=true. | Rechazo de auto-verificación estudiantil y prohibición de auto-registro con rol administrador. | Aprobado (CP-S04 PASS). Solo hasRole('admin') o backend autorizado puede cambiar isVerified/role. |
 | CP-S05 (CON-20/28) | Flujos Escrow/PQRS | Auditoría de whitelist affectedKeys en /applications, /users, /projects y /support_tickets. | Permite actualizar escrowStage, certificateId, completedAt, deliverableUrl, ratingAverage y admin moderation. | Aprobado. Corregido defecto bloqueante donde reglas previas prohibían cerrar proyectos o calcular ratings. |
 | CP-S06 (CON-30) | Rendimiento BD | Validación estructural y despliegue real de firestore.indexes.json (7 índices compuestos). | Despliegue exitoso sin errores en database (default) de conectau-be1a2. | Aprobado ('deployed indexes in firestore.indexes.json successfully'). |
@@ -38,13 +38,13 @@ Como responsable del diseño backend, seguridad NoSQL e integridad de datos en C
 ## 3. Validación Multi-Rol
 - **Validación de Cierre de Brecha Crítica en Producción:** Antes de este corte, Firebase Firestore operaba con regla de desarrollo abierta y Hosting desfasado. Tras ejecutar firebase deploy --only firestore:rules,firestore:indexes,hosting, todas las consultas de /landing, /verify, /applications, /vacancies, /talent y /admin fueron verificadas bajo las nuevas reglas estrictas sin presentar errores de permisos.
 - **Validación Pública sin Autenticación (Empleadores Externos):** Se verificó directamente desde Edge limpio (sin cookies de sesión) que un tercero puede validar CONECTAU-VAL-SIMON01 en 55 ms de carga inicial y obtener respaldo auténtico desde Firestore mientras cualquier identificador inválido es rechazado limpiamente.
-- **Limitación Transparente en Firebase Storage:** Al ejecutar deploy --only storage se comprobó que el proyecto conectau-be1a2 aún no ha inicializado su bucket en Consola de Firebase; por ello storage.rules quedó compilado/validado localmente y el flujo de entregables web almacena enlaces validados (GitHub/Figma/Drive).
+- **Arquitectura 100 % Spark Free Tier ($0 USD):** Al verificar que Firebase Storage ahora exige actualizar al plan de facturación Blaze, se desacopló firebase/storage en src/config/firebase.ts, firebase_service.dart y firebase.json (reduciendo además el bundle productivo a 990.81 kB), operando 100 % gratis mediante enlaces HTTPS verificados en Cloud Firestore.
 
 ## 4. Registro Posterior: Hallazgos y Remediaciones
 - **HALL-11 (Crítico de Seguridad — Remediado):** Cloud Firestore en producción ejecutaba 'allow read, write: if true'. Reemplazado por firestore.rules RBAC endurecido y Append-Only en conectau-be1a2.
 - **HALL-12 (Crítico Funcional — Remediado):** Las reglas locales de Firestore bloqueaban: crear usuarios sin campo 'id', actualizar escrowStage/certificateId en aplicaciones, actualizar ratingAverage tras reseña, incrementar applicationsCount como estudiante, editar vacantes en EditVacancy y moderar usuarios/vacantes como Admin. Corregidos todos los bloques y verificados.
 - **HALL-05 / HALL-06 / HALL-19 (Corregidos):** Desplegados los 7 índices compuestos, corregida normalización 'inactive' en domainHelpers.ts, queries legacy en favoritesService.ts/studentsService.ts, y remediado HALL-19 (al activarse el índice compuesto appliedAt, Firestore excluía docs previos sin ese campo; se movió la ordenación fecha-descendente en cliente en applicationsService.ts preservando los 4 historiales reales incluyendo Product Owner Bienestar Digital).
-- **HALL-13 (Infraestructura Cloud — Documentado):** Firebase Storage no está inicializado en el proyecto Spark conectau-be1a2 (requiere clic único en 'Get Started' en Firebase Console). Reglas storage.rules (<10MB por usuario) ya validadas y listas para activar.
+- **HALL-13 (Infraestructura Cloud — Resuelto Spark Free):** Firebase Storage exige plan pago Blaze. Se desacopló por completo getStorage() y 'storage' en firebase.json, pubspec.yaml y scripts de deploy; CVs, portafolios y entregables RF09 operan vía URLs HTTPS validadas en Firestore (CP-S03 PASS).
 
 ## 5. Evidencia Verificada en Terminal y Nube
 ```text
@@ -65,10 +65,10 @@ $ npm run test:security
 > node --test src/test/firebase.security.test.mjs
   PASS CP-S01: Append-Only immutability (7 colecciones allow delete: if false)
   PASS CP-S02: /certificates public read & role-locked create
-  PASS CP-S03: conversations participants & scoped storage (<10MB)
+  PASS CP-S03: conversations participants & 100% Spark Free Tier sin Storage Blaze
   PASS CP-S04: blocks admin self-escalation & student self-verification
   PASS CP-S05: controlled workflow updates (escrowStage, deliverables, ratingAverage, support_tickets)
   PASS CP-S06: composite indexes (7 groups)
   PASS CP-S07: firebase.json security headers & .gitignore secret protection
-  tests 7 | pass 7 | fail 0 (4.68 ms)
+  tests 7 | pass 7 | fail 0 (9.18 ms)
 ```

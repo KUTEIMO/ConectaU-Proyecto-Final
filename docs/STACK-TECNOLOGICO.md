@@ -18,11 +18,10 @@
 | Servicio Firebase | Uso |
 |-------------------|-----|
 | **Authentication** | Email/contraseña, Google, invitado |
-| **Cloud Firestore** | Usuarios, proyectos, postulaciones, mensajes, notificaciones |
-| **Storage** | Archivos de perfil y adjuntos |
-| **Hosting** | Sitio estático desde `dist/` |
+| **Cloud Firestore** | Usuarios, proyectos, postulaciones, entregables HTTPS, mensajes, notificaciones |
+| **Hosting** | Sitio estático desde `dist/` (100 % Spark Free Tier) |
 
-Configuración: `src/config/firebase.ts`, reglas en `firestore.rules` y `storage.rules`.
+Configuración: `src/config/firebase.ts`, reglas e índices en `firestore.rules` y `firestore.indexes.json` (sin dependencia de Storage de pago).
 
 ## Capas de la app
 
