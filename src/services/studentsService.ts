@@ -76,34 +76,41 @@ export const getStudents = async (filters?: StudentFilters): Promise<StudentWith
     }
   });
 
-  let students: StudentWithProfile[] = snapshot.docs.map((docSnapshot) => {
-    const student = mapStudent(docSnapshot);
-    const profile = profileMap.get(student.id) || null;
-    const combinedSkills = Array.from(new Set([...(student.skills || []), ...(profile?.skills || [])]));
-    const searchTokens = [
-      student.name,
-      student.career,
-      student.university,
-      student.semester,
-      profile?.headline,
-      profile?.summary,
-      ...combinedSkills,
-    ]
-      .filter(Boolean)
-      .map((value) => normalizeString(value));
+  let students: StudentWithProfile[] = snapshot.docs
+    .map((docSnapshot) => {
+      const student = mapStudent(docSnapshot);
+      const profile = profileMap.get(student.id) || null;
+      const combinedSkills = Array.from(new Set([...(student.skills || []), ...(profile?.skills || [])]));
+      const searchTokens = [
+        student.name,
+        student.career,
+        student.university,
+        student.semester,
+        profile?.headline,
+        profile?.summary,
+        ...combinedSkills,
+      ]
+        .filter(Boolean)
+        .map((value) => normalizeString(value));
 
-    return {
-      ...student,
-      profile,
-      normalizedUniversity: normalizeUniversityName(student.university),
-      normalizedCareer: normalizeString(student.career),
-      normalizedSemester: student.semester
-        ? student.semester.replace(/\D/g, '')
-        : undefined,
-      normalizedSkills: combinedSkills.map((skill) => normalizeString(skill)),
-      searchIndex: searchTokens.join(' '),
-    };
-  });
+      return {
+        ...student,
+        profile,
+        normalizedUniversity: normalizeUniversityName(student.university),
+        normalizedCareer: normalizeString(student.career),
+        normalizedSemester: student.semester
+          ? student.semester.replace(/\D/g, '')
+          : undefined,
+        normalizedSkills: combinedSkills.map((skill) => normalizeString(skill)),
+        searchIndex: searchTokens.join(' '),
+      };
+    })
+    .filter(
+      (student) =>
+        !student.isGuest &&
+        student.isActive !== false &&
+        normalizeString(student.name) !== 'invitado'
+    );
 
   if (filters?.university) {
     students = students.filter((student) => student.normalizedUniversity === filters.university);
@@ -205,7 +212,7 @@ const fetchRootProfiles = async (companyId: string, studentId?: string) => {
     }
     return [];
   }
-  const snapshot = await getDocs(query(savedProfilesRoot, where('userId', '==', companyId)));
+  const snapshot = await getDocs(query(savedProfilesRoot, where('companyId', '==', companyId)));
   return snapshot.docs.map((docSnapshot) => ({ ref: docSnapshot.ref, data: mapSavedProfile(docSnapshot) }));
 };
 

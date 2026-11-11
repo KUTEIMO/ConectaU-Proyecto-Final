@@ -15,15 +15,17 @@ import {
   BookmarkCheck,
   ChevronLeft,
   ChevronRight,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenSupport?: () => void;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, onOpenSupport }: SidebarProps) {
   const location = useLocation();
   const { userData } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
@@ -116,6 +118,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Link>
             );
           })}
+          {onOpenSupport && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenSupport();
+              }}
+              className={`w-full flex items-center ${collapsed ? 'justify-center' : 'space-x-2 sm:space-x-3'} px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface transition-colors touch-manipulation`}
+              title="Centro de Ayuda / PQRS"
+              aria-label="Centro de Ayuda y Soporte"
+            >
+              <HelpCircle className="h-5 w-5 flex-shrink-0 text-primary" />
+              {!collapsed && <span className="text-sm sm:text-base truncate">Soporte / PQRS</span>}
+            </button>
+          )}
         </nav>
         <button
           onClick={() => setCollapsed((prev) => !prev)}

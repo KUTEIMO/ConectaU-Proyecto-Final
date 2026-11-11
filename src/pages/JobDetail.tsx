@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MapPin, DollarSign, Clock, Briefcase, Heart, ArrowLeft } from 'lucide-react';
 import { getProjectById } from '../services/projectsService';
@@ -16,14 +16,7 @@ export default function JobDetail() {
   const [isFav, setIsFav] = useState(false);
   const [applying, setApplying] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadProject();
-      checkFavorite();
-    }
-  }, [id]);
-
-  const loadProject = async () => {
+  const loadProject = useCallback(async () => {
     if (!id) return;
     try {
       const data = await getProjectById(id);
@@ -33,9 +26,9 @@ export default function JobDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const checkFavorite = async () => {
+  const checkFavorite = useCallback(async () => {
     if (!id || !currentUser || userData?.role !== 'student') return;
     try {
       const fav = await isFavorite(currentUser.uid, id);
@@ -43,7 +36,14 @@ export default function JobDetail() {
     } catch (error) {
       console.error('Error checking favorite:', error);
     }
-  };
+  }, [id, currentUser, userData?.role]);
+
+  useEffect(() => {
+    if (id) {
+      loadProject();
+      checkFavorite();
+    }
+  }, [id, loadProject, checkFavorite]);
 
   const handleFavorite = async () => {
     if (!id || !currentUser || userData?.role !== 'student') return;

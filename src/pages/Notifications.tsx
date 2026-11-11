@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -10,13 +10,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadNotifications();
-    }
-  }, [currentUser]);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     if (!currentUser) return;
     try {
       const data = await getNotifications(currentUser.uid);
@@ -26,7 +20,13 @@ export default function Notifications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadNotifications();
+    }
+  }, [currentUser, loadNotifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {

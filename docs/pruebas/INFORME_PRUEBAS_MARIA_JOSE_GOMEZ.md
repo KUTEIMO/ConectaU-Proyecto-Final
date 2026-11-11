@@ -1,44 +1,74 @@
 # Evidencia Plan Pruebas Maria Jose Gomez
 
 - **Responsable:** María José Gómez Contreras (@mariajo11-04)
-- **Rol:** Ingeniera Backend & Arquitecta de Base de Datos (Firebase Auth, Firestore, Reglas RBAC, Certificados y Reseñas)
-- **Tickets Jira Asociados:** `m_gomez27 (CON-4, CON-5, CON-15, CON-16, CON-17, CON-23, CON-28, CON-30)`
+- **Rol:** Ingeniera Backend & Arquitecta de Datos/Seguridad (Firestore Rules RBAC, Índices Compuestos, Certificados y Reseñas)
+- **Tickets Jira:** `m_gomez27 (CON-4, CON-5, CON-15, CON-16, CON-17, CON-23, CON-28, CON-30)`
+- **Versión Evaluada:** `v1.3.0-prod-verified` (`https://conectau-be1a2.web.app`)
 - **Fecha de Corte:** 10 de noviembre de 2026
 
-## 1. Propósito y Alcance Individual
-Como responsable del diseño backend, seguridad NoSQL e integridad de datos en Cloud Firestore, este documento consolida las pruebas de Verificación y Validación (V&V) realizadas sobre las reglas de acceso por roles (firestore.rules y storage.rules), los índices compuestos de consulta (firestore.indexes.json), el portal de verificación pública de certificados (/verify/:id) y el módulo de calificaciones mutuas (/reviews). Se documentan las ejecuciones reales automatizadas mediante Node Test Runner (node --test) y las comprobaciones en vivo sobre documentos reales almacenados en Firestore.
+## 1. Propósito, Alcance y Cobertura
+Como responsable del diseño backend, seguridad NoSQL e integridad de datos en Cloud Firestore, este documento consolida la auditoría forense y pruebas de Verificación y Validación (V&V) sobre las reglas de seguridad (firestore.rules y storage.rules), los índices compuestos de consulta (firestore.indexes.json), la validación pública de constancias (/verify/:id) y el cálculo bilateral de reputación (/reviews). Un hallazgo crítico clave de la auditoría en nube reveló que el proyecto desplegado anteriormente mantenía reglas abiertas de desarrollo (allow read, write: if true) y sin índices desplegados; en este corte se corrigieron 15 fallos de reglas, se bloquearon escalaciones de rol y se liberaron las reglas productivas en conectau-be1a2.
 
-## 2. Matriz de Verificación (Casos de Prueba Ejecutados)
-| ID Caso (Jira) | Requisito | Entorno / Entrada | Resultado Esperado | Resultado Obtenido |
+| Código | Alcance | Módulos | Estado |
+| :--- | :--- | :--- | :--- |
+| RNF02 Auth/RBAC | Protección de lecturas/escrituras por rol y bloqueo de escalación admin | firestore.rules | Compilado y liberado en Cloud Firestore; CP-S04 PASS |
+| RNF02 Append-Only | Inmutabilidad: allow delete: if false en 7 colecciones críticas | firestore.rules | Verificado automáticamente por CP-S01 (7/7 colecciones) |
+| CON-30 Índices | Índices compuestos where+orderBy en Firestore | firestore.indexes.json | 7 índices desplegados exitosamente en base (default) |
+| RF10 Reputación | Calificaciones 1–5, promedio 1 decimal y permiso seguro en users/{uid} | reviewsService + Rules | Aprobado en CP-U05 y reglas verificadas |
+| RF11 Verificación | Consulta pública sin login (/verify/:id) e inmutabilidad de certificados | certificatesService + Rules | Aprobado en vivo en conectau-be1a2.web.app (55 ms) |
+| Storage / PQRS | Reglas scoped por usuario <10MB y soporte /support_tickets | storage.rules + Rules | Sintaxis validada; Storage pendiente activación inicial en Consola |
+
+## 2. Matriz de Verificación (13 Casos de Prueba)
+| ID Caso (Jira) | Área | Entorno / Entrada | Resultado Esperado | Resultado Obtenido |
 | :--- | :--- | :--- | :--- | :--- |
-| CP-S01 (CON-16) | RNF02 Inmutabilidad | Auditoría automatizada sobre firestore.rules (file src/test/firebase.security.test.mjs). | Bloqueo explícito de borrado físico (allow delete: if false) en users, projects, applications, notifications, certificates y reviews. | Aprobado. Se verificaron 6 reglas declarativas de inmutabilidad Append-Only dentro de firestore.rules. |
-| CP-S02 / CP-CERT-01 (CON-23) | RF11 Certificados | Acceso sin sesión previa a /verify/CONECTAU-VAL-SIMON01 y código inexistente /verify/CONECTAU-VAL-NOEXISTE. | Lectura pública permitida únicamente en /certificates/{id}; código válido despliega constancia y código inválido informa error claro. | Aprobado en preview local (v1.2.0-qa) en 4.61 s y 4.09 s. Hallazgo HALL-01: la URL productiva conectau-be1a2.web.app aún sirve build anterior y redirige /verify al landing hasta ejecutar npm run deploy. |
-| CP-SEC-03 (CON-30) | Rendimiento BD | Inspección de firestore.indexes.json frente a consultas compuestas where+orderBy en applicationsService.ts y notificationsService.ts. | Existencia de índices compuestos declarados para evitar excepciones failed-precondition y ordenamiento en cliente. | Hallazgo resuelto (HALL-05). firestore.indexes.json estaba vacío []. Se definieron 7 índices compuestos válidos (CP-S04 PASSED). |
-| CP-U03 / CP-U06 (CON-23 / CON-15) | Integridad Datos | Ejecución de 1.000 iteraciones de generateVerificationCode() y casos borde de normalizeProjectStatus(). | Formato estricto CONECTAU-VAL-XXXXXX sin caracteres ambiguos (O/0/I/1) y correcta distinción entre active e inactive. | Hallazgo resuelto (HALL-06). Se corrigió defecto en projectsService.ts donde 'inactive'.includes('active') clasificaba vacantes inactivas como activas. Suite 6/6 unitarios PASSED. |
-| CP-REV-01 (CON-28) | RF10 Reputación | Prueba unitaria de clamping [1..5] y promedio decimal + apertura interactiva de ReviewModal sobre Comfanorte. | Acotamiento estricto del puntaje, cálculo exacto a 1 decimal (4.7) e inmutabilidad de reseñas en Firestore. | Aprobado. Modal renderizó criterios de comunicación, calidad y puntualidad sin mutar la BD durante la prueba de lectura. |
+| CP-S00 (CON-16) | Auditoría Nube | Consulta vía Firebase MCP (firebase_get_security_rules) del estado previo en producción. | Reglas productivas RBAC activas antes de la sustentación final. | Hallazgo Crítico Remediado (HALL-11): La nube tenía regla temporal allow read, write: if true. Desplegadas nuevas reglas RBAC reales. |
+| CP-S01 (CON-16) | RNF02 Inmutabilidad | Ejecución de prueba automatizada CP-S01 verificando allow delete: if false. | Bloqueo total de borrado físico en users, projects, applications, notifications, certificates, reviews y support_tickets. | Aprobado. 7 colecciones protegidas con inmutabilidad Append-Only verificadas. |
+| CP-S02 (CON-23) | RF11 Certificados | Validación de reglas en /certificates/{certificateId}: lectura pública y creación restringida. | read: if true (permite empleadores sin cuenta) y create restringido a company/admin con code==id. | Aprobado. Cierra brecha donde un estudiante podía emitir constancias falsas a su nombre. |
+| CP-S03 (CON-17/24) | RNF02 Chat/Storage | Verificación de pertenencia a participants en /conversations y restricción users/{uid} < 10MB en storage.rules. | Ningún tercero ajeno puede leer chats ni sobreescribir archivos de otro UID. | Aprobado en CP-S03 y compilador firebase_validate_security_rules (OK: No errors detected). |
+| CP-S04 (CON-05/16) | Anti-Escalación | Auditoría de regla create/update en /users/{userId} ante intentos de auto-asignar role='admin' o isVerified=true. | Rechazo de auto-verificación estudiantil y prohibición de auto-registro con rol administrador. | Aprobado (CP-S04 PASS). Solo hasRole('admin') o backend autorizado puede cambiar isVerified/role. |
+| CP-S05 (CON-20/28) | Flujos Escrow/PQRS | Auditoría de whitelist affectedKeys en /applications, /users, /projects y /support_tickets. | Permite actualizar escrowStage, certificateId, completedAt, deliverableUrl, ratingAverage y admin moderation. | Aprobado. Corregido defecto bloqueante donde reglas previas prohibían cerrar proyectos o calcular ratings. |
+| CP-S06 (CON-30) | Rendimiento BD | Validación estructural y despliegue real de firestore.indexes.json (7 índices compuestos). | Despliegue exitoso sin errores en database (default) de conectau-be1a2. | Aprobado ('deployed indexes in firestore.indexes.json successfully'). |
+| CP-U03 (CON-23) | Unicidad Códigos | Generación automatizada de 100 códigos consecutivos con generateVerificationCode(). | 100 % cumplen patrón CONECTAU-VAL-[A-HJ-NP-Z2-9]{6} sin caracteres ambiguos (O/0/I/1). | Aprobado (100/100 únicos, 0.54 ms). |
+| CP-U05 (CON-28) | RF10 Promedio | Pruebas unitarias de normalizeReviewRating(0, 8, NaN) y calculateAverageRating([5,4,5]). | Acotamiento estricto [1..5] y promedio exacto 4.7. | Aprobado (0.21 ms). |
+| CP-U06 / U07 | RF01 / SDK v10 | Pruebas unitarias de isInstitutionalEmail() (.edu/.edu.co vs gmail.com) y omitUndefined(). | Acepta lab.unisimon.edu.co / lab.ufps.edu.co; rechaza gmail.com; elimina claves undefined. | Aprobado (2.20 ms / 1.64 ms). Previene crash Unsupported field value. |
+| CP-LIVE-02/04 (CON-23) | RF11 En Vivo | Sondeo en producción a /verify/CONECTAU-VAL-SIMON01 en escritorio (1440px) y móvil (390px) sin sesión. | Recupera constancia de Eduardo Soto (120h, Zona Franca Cúcuta) con estado Verificada. | Aprobado en vivo en 4.71 s (desktop) y 3.64 s (móvil, overflowX=false). |
+| CP-LIVE-03 (CON-23) | RF11 Negativa | Sondeo en producción a /verify/CONECTAU-VAL-NOEXISTE. | Mensaje controlado 'Constancia No Encontrada' sin fugas ni excepciones JS. | Aprobado (3.75 s, 0 console.error). |
+| CP-LIVE-ADM (CON-14/15) | RF08 En Vivo | Acceso en producción con admin@conectau.dev a /admin, /admin/users y /admin/vacancies tras liberar reglas. | Consultas getCountFromServer y listados de moderación operan sin permission-denied. | Aprobado en vivo (28 usuarios, 10 vacantes, 16 postulaciones, 0 errores). |
 
-## 3. Validación de Escenarios Realistas
-- **Escenario Val-01 (Validación Externa por Empleador — Sin Login):** Un tercero no autenticado ingresó el código oficial CONECTAU-VAL-SIMON01 en /verify/CONECTAU-VAL-SIMON01. El sistema recuperó desde Cloud Firestore el registro a nombre de Eduardo José Soto Herrera (120 horas prácticas, Zona Franca Cúcuta, 23 de octubre de 2026) con estado 'Constancia Oficial Verificada'.
-- **Escenario Val-02 (Prueba Negativa Anti-Falsificación):** Se consultó el identificador ficticio CONECTAU-VAL-NOEXISTE. El módulo respondió exactamente con el estado controlado 'Constancia No Encontrada', orientando al usuario sobre el prefijo institucional.
-- **Escenario Val-03 (Calificación Bilateral al Cierre):** Desde la postulación culminada 'Product Owner Bienestar Digital', se abrió ReviewModal confirmando el contexto del proyecto, selector interactivo de 5 estrellas y bloqueo contra envío vacío.
+## 3. Validación Multi-Rol
+- **Validación de Cierre de Brecha Crítica en Producción:** Antes de este corte, Firebase Firestore operaba con regla de desarrollo abierta y Hosting desfasado. Tras ejecutar firebase deploy --only firestore:rules,firestore:indexes,hosting, todas las consultas de /landing, /verify, /applications, /vacancies, /talent y /admin fueron verificadas bajo las nuevas reglas estrictas sin presentar errores de permisos.
+- **Validación Pública sin Autenticación (Empleadores Externos):** Se verificó directamente desde Edge limpio (sin cookies de sesión) que un tercero puede validar CONECTAU-VAL-SIMON01 en 55 ms de carga inicial y obtener respaldo auténtico desde Firestore mientras cualquier identificador inválido es rechazado limpiamente.
+- **Limitación Transparente en Firebase Storage:** Al ejecutar deploy --only storage se comprobó que el proyecto conectau-be1a2 aún no ha inicializado su bucket en Consola de Firebase; por ello storage.rules quedó compilado/validado localmente y el flujo de entregables web almacena enlaces validados (GitHub/Figma/Drive).
 
-## 4. Registro Posterior: Hallazgos y Ajustes
-- **HALL-05 (Alto — Corregido):** El archivo firestore.indexes.json contenía un arreglo vacío []. Esto obligaba a Firestore SDK a capturar failed-precondition y ejecutar ordenamientos manuales de respaldo. Se implementaron los 7 índices compuestos en CON-30.
-- **HALL-06 (Medio — Corregido):** En projectsService.ts, la evaluación value.includes('active') precedía a value.includes('inactive'), produciendo un falso positivo lógico. Corregido en src/utils/domainHelpers.ts y comprobado en CP-U06.
-- **HALL-01 (Alto — Pendiente de Deploy):** En https://conectau-be1a2.web.app, la ruta pública /verify/:id aún recae en la versión previa alojada en Firebase Hosting. Requiere ejecutar firebase deploy --only hosting,firestore:indexes.
+## 4. Registro Posterior: Hallazgos y Remediaciones
+- **HALL-11 (Crítico de Seguridad — Remediado):** Cloud Firestore en producción ejecutaba 'allow read, write: if true'. Reemplazado por firestore.rules RBAC endurecido y Append-Only en conectau-be1a2.
+- **HALL-12 (Crítico Funcional — Remediado):** Las reglas locales de Firestore bloqueaban: crear usuarios sin campo 'id', actualizar escrowStage/certificateId en aplicaciones, actualizar ratingAverage tras reseña, incrementar applicationsCount como estudiante, editar vacantes en EditVacancy y moderar usuarios/vacantes como Admin. Corregidos todos los bloques y verificados.
+- **HALL-05 / HALL-06 / HALL-19 (Corregidos):** Desplegados los 7 índices compuestos, corregida normalización 'inactive' en domainHelpers.ts, queries legacy en favoritesService.ts/studentsService.ts, y remediado HALL-19 (al activarse el índice compuesto appliedAt, Firestore excluía docs previos sin ese campo; se movió la ordenación fecha-descendente en cliente en applicationsService.ts preservando los 4 historiales reales incluyendo Product Owner Bienestar Digital).
+- **HALL-13 (Infraestructura Cloud — Documentado):** Firebase Storage no está inicializado en el proyecto Spark conectau-be1a2 (requiere clic único en 'Get Started' en Firebase Console). Reglas storage.rules (<10MB por usuario) ya validadas y listas para activar.
 
-## 5. Registro de Consola Verificado
+## 5. Evidencia Verificada en Terminal y Nube
 ```text
+$ npx firebase-tools deploy --only firestore:rules,firestore:indexes,hosting --non-interactive
++ cloud.firestore: rules file firestore.rules compiled successfully
++ firestore: deployed indexes in firestore.indexes.json successfully for (default) database
++ firestore: released rules firestore.rules to cloud.firestore
++ hosting[conectau-be1a2]: file upload complete -> release complete -> https://conectau-be1a2.web.app
+
+HTTP Probe Live (10/11/2026):
+  GET /                               200 OK (58 ms) [X-Frame-Options: DENY, nosniff, HSTS, XSS-Protection]
+  GET /login                          200 OK (54 ms)
+  GET /register                       200 OK (51 ms)
+  GET /forgot-password                200 OK (78 ms)
+  GET /verify/CONECTAU-VAL-SIMON01    200 OK (55 ms)
+
 $ npm run test:security
 > node --test src/test/firebase.security.test.mjs
-  ConectaU Firebase Security Rules, Append-Only Policy & Indexes Audit
-    PASS CP-S01: enforces Append-Only immutability (allow delete: if false) (2.06 ms)
-    PASS CP-S02: permits public read on /certificates for /verify/:id (0.44 ms)
-    PASS CP-S03: requires auth and participant membership for conversations (0.19 ms)
-    PASS CP-S04: defines valid composite indexes in firestore.indexes.json (0.25 ms)
-    PASS CP-S05: validates SPA rewrites, security headers & .gitignore secrets (0.36 ms)
-  tests 5 | pass 5 | fail 0
-
-Nota: CP-U03 validó 1.000 generaciones consecutivas de códigos CONECTAU-VAL-XXXXXX (>=995 únicos).
-      CP-U05 y CP-U06 validaron acotamiento [1..5] y normalización inactive sin errores.
+  PASS CP-S01: Append-Only immutability (7 colecciones allow delete: if false)
+  PASS CP-S02: /certificates public read & role-locked create
+  PASS CP-S03: conversations participants & scoped storage (<10MB)
+  PASS CP-S04: blocks admin self-escalation & student self-verification
+  PASS CP-S05: controlled workflow updates (escrowStage, deliverables, ratingAverage, support_tickets)
+  PASS CP-S06: composite indexes (7 groups)
+  PASS CP-S07: firebase.json security headers & .gitignore secret protection
+  tests 7 | pass 7 | fail 0 (4.68 ms)
 ```

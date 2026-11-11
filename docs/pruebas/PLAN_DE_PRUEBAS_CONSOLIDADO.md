@@ -1,24 +1,25 @@
-# Plan de Pruebas Consolidado y Acta de Evidencias — ConectaU (Corte 10 de Noviembre de 2026)
+# Plan de Pruebas Consolidado y Evidencias v1.3.0 — ConectaU (10 de Noviembre de 2026)
 
-> **Proyecto:** ConectaU — Marketplace Académico Regional  
+> **Proyecto:** ConectaU — Plataforma Académica Regional (`https://conectau-be1a2.web.app`)  
 > **Asignatura:** Proyecto Final de Diseño de Ingeniería de Sistemas (UniSimón Cúcuta)  
-> **Docente:** Ing. Jover Alonso  
-> **Versión Validada:** `v1.2.0-qa-sprint3`  
+> **Docente Evaluador:** Ing. Jover Alonso  
+> **Versión Validada en Producción:** `v1.3.0-prod-verified`
 
 ---
 
-## 1. Resumen Ejecutivo de Resultados Realmente Comprobados
+## 1. Resumen Ejecutivo de Calidad y Despliegue Real
 
-| Tipo de Prueba | Herramienta / Comando | Resultado Obtenido | Alcance Verificado |
+| Dimensión QA | Comando / Entorno | Resultado Verificado | Evidencia |
 | :--- | :--- | :--- | :--- |
-| **Compilación y Tipos** | `npm run build` (`tsc && vite build`) | **PASS** (0 errores TS, 1.444 módulos en 9.24 s) | Toda la aplicación React/TS (`ConectaU-web`) |
-| **Suite Automatizada** | `npm test` (`node --test src/test/*.test.mjs`) | **PASS** (14/14 pruebas en 3 suites, 638.2 ms) | Dominio, seguridad RBAC Firestore, índices y contratos UI |
-| **Análisis Estático ESLint** | `npx eslint` sobre módulos intervenidos | **0 errores** (reducido desde 8 errores iniciales) | Corrección real en `Messages.tsx`, `firebase.ts`, `activityLogger.ts` |
-| **Pruebas E2E Navegador** | Edge Headless CDP (`vite preview` + Firestore real) | **10/10 escenarios PASS**, **0 console.error** | `/verify`, `/login`, `/app`, `/jobs`, `/applications`, Escrow, Certificado, Reseñas |
-| **Sondeo Live Firebase Hosting** | HTTPS GET a `https://conectau-be1a2.web.app` | **5/5 rutas HTTP 200 OK** (132–796 ms) | Disponibilidad 24/7 y headers `X-Frame-Options: DENY`, `nosniff` |
+| **Análisis Estático ESLint** | `npm run lint` (`--max-warnings 0`) | **0 errores, 0 warnings** | Todas las vistas/servicios React/TS saneados |
+| **Suite Unitaria, Seguridad y UI** | `npm test` (`ConectaU-web`) | **20/20 PASS** (597.2 ms) | `domain.validators`, `firebase.security`, `ui.contracts` |
+| **Suite Cloud Functions** | `npm test` (`ConectaU-app/functions`) | **4/4 PASS** (294.4 ms) | 4 triggers/callables reales en Node 22 |
+| **Build Productivo** | `npm run build:prod` | **PASS** (1.446 módulos, 8.91 s) | Bundle `index-BXL_jtpd.js` con `.env.production` |
+| **Despliegue Firebase** | `deploy --only firestore:rules,firestore:indexes,hosting` | **COMPLETADO** | Reglas RBAC + 7 índices + Hosting live (`Storage` pendiente activación en Consola) |
+| **Pruebas E2E Live Multi-Rol** | Edge Headless CDP sobre `https://conectau-be1a2.web.app` | **21/21 PASS** (`0` console.error) | Público, Estudiante, Empresa, Administrador y Móvil 390px |
 
-## 2. Informes Individuales por Integrante (Entrega 13 de Noviembre de 2026)
-- [Eduardo José Soto Herrera](INFORME_PRUEBAS_EDUARDO_SOTO.md) (`@KUTEIMO`) — Integración Multiplataforma, Chat y Flujo E2E.
-- [María José Gómez Contreras](INFORME_PRUEBAS_MARIA_JOSE_GOMEZ.md) (`@mariajo11-04`) — Seguridad RBAC Firestore, Índices Compuestos, Certificados y Reseñas.
-- [Fernanda Beatriz Jaimes Jaimes](INFORME_PRUEBAS_FERNANDA_JAIMES.md) (`@jaimes136`) — Interfaces React, EscrowTracker, Constancia PDF y Responsividad.
-- [Yulitza Alexandra Carrero Avendaño](INFORME_PRUEBAS_YULITZA_CARRERO.md) (`@Yulitza-Carrero`) — Regresión Automatizada, Auditoría Pre-Deploy, Hosting y UAT.
+## 2. Actas Individuales (Entrega 13 de Noviembre de 2026)
+- [Eduardo José Soto Herrera](INFORME_PRUEBAS_EDUARDO_SOTO.md) (`@KUTEIMO`) — 12 casos multiplataforma Web, Móvil, Cloud Functions y E2E.
+- [María José Gómez Contreras](INFORME_PRUEBAS_MARIA_JOSE_GOMEZ.md) (`@mariajo11-04`) — 13 casos de Seguridad RBAC Firestore, Índices, Certificados y Reseñas.
+- [Fernanda Beatriz Jaimes Jaimes](INFORME_PRUEBAS_FERNANDA_JAIMES.md) (`@jaimes136`) — 12 casos UI React, Entregables, Escrow, Soporte PQRS y Responsividad.
+- [Yulitza Alexandra Carrero Avendaño](INFORME_PRUEBAS_YULITZA_CARRERO.md) (`@Yulitza-Carrero`) — 14 casos de Gobierno QA, ESLint 0-warnings, Regresión 24/24 y UAT en producción.

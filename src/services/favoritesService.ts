@@ -41,32 +41,20 @@ const dedupeFavorites = (...lists: Favorite[][]): Favorite[] => {
 };
 
 export const getFavorites = async (studentId: string): Promise<Favorite[]> => {
-  const [byUserId, byStudentId] = await Promise.all([
-    fetchFavoritesByField('userId', studentId),
-    fetchFavoritesByField('studentId', studentId),
-  ]);
-  return dedupeFavorites(byUserId, byStudentId);
+  const byStudentId = await fetchFavoritesByField('studentId', studentId);
+  return dedupeFavorites(byStudentId);
 };
 
 const getFavoriteDocs = async (studentId: string, projectId: string) => {
-  const [byUserId, byStudentId] = await Promise.all([
-    getDocs(
-      query(
-        favoritesCollection,
-        where('userId', '==', studentId),
-        where('projectId', '==', projectId)
-      )
-    ),
-    getDocs(
-      query(
-        favoritesCollection,
-        where('studentId', '==', studentId),
-        where('projectId', '==', projectId)
-      )
-    ),
-  ]);
+  const byStudentId = await getDocs(
+    query(
+      favoritesCollection,
+      where('studentId', '==', studentId),
+      where('projectId', '==', projectId)
+    )
+  );
 
-  return [...byUserId.docs, ...byStudentId.docs];
+  return byStudentId.docs;
 };
 
 export const addFavorite = async (studentId: string, projectId: string) => {

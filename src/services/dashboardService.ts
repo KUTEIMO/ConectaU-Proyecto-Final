@@ -58,10 +58,10 @@ export const getAdminStats = async () => {
     const applicationsSnapshot = await getCountFromServer(collection(db, 'applications'));
     const totalApplications = applicationsSnapshot.data().count;
 
-    // Contar matches (aplicaciones aceptadas)
+    // Contar matches (aplicaciones aceptadas y culminadas)
     const matchesQuery = query(
       collection(db, 'applications'),
-      where('status', '==', 'accepted')
+      where('status', 'in', ['accepted', 'completed'])
     );
     const matchesSnapshot = await getCountFromServer(matchesQuery);
     const totalMatches = matchesSnapshot.data().count;
@@ -90,7 +90,7 @@ export const getStudentStats = async (studentId: string) => {
     return {
       totalApplications: applications.length,
       pendingApplications: applications.filter((a) => a.status === 'pending').length,
-      acceptedApplications: applications.filter((a) => a.status === 'accepted').length,
+      acceptedApplications: applications.filter((a) => a.status === 'accepted' || a.status === 'completed').length,
       rejectedApplications: applications.filter((a) => a.status === 'rejected').length,
     };
   } catch (error) {

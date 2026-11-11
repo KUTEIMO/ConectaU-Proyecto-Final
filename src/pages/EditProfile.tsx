@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { Save, X } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { updateUserData } from '../services/authService';
+import { getUserData, updateUserData } from '../services/authService';
 import { VALID_UNIVERSITIES } from '../constants/geo';
 
 interface StudentProfileForm {
@@ -59,7 +59,7 @@ const mapUniversity = (value?: string) => {
 };
 
 export default function EditProfile() {
-  const { userData } = useAuthStore();
+  const { userData, setUserData } = useAuthStore();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProfileForm>();
 
@@ -115,6 +115,10 @@ export default function EditProfile() {
 
     try {
       await updateUserData(userData.id, payload);
+      const refreshed = await getUserData(userData.id);
+      if (refreshed) {
+        setUserData(refreshed);
+      }
       alert('Perfil actualizado correctamente');
       navigate('/profile');
     } catch (error: any) {
@@ -171,14 +175,17 @@ export default function EditProfile() {
             <h2 className="text-xl font-semibold">Información académica</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Universidad</label>
+                <label className="block text-sm font-medium mb-1">Universidad *</label>
                 <input
                   type="text"
                   list="universities"
-                  {...register('university')}
+                  {...register('university', { required: 'La universidad es requerida' })}
                   placeholder="Ej. Universidad Simón Bolívar"
                   className="w-full px-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
+                {errors.university && (
+                  <p className="text-sm text-red-600 mt-1">{errors.university.message}</p>
+                )}
                 <datalist id="universities">
                   {VALID_UNIVERSITIES.map((uni) => (
                     <option key={uni} value={uni} />
@@ -186,12 +193,15 @@ export default function EditProfile() {
                 </datalist>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Carrera</label>
+                <label className="block text-sm font-medium mb-1">Carrera *</label>
                 <input
                   type="text"
-                  {...register('career')}
+                  {...register('career', { required: 'La carrera es requerida' })}
                   className="w-full px-4 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
+                {errors.career && (
+                  <p className="text-sm text-red-600 mt-1">{errors.career.message}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Semestre</label>

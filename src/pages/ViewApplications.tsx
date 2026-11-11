@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { User, FileText, CheckCircle, XCircle, Clock, Eye, MessageSquare, CalendarClock, Shield, Award, CheckCircle2, ArrowRight, Star } from 'lucide-react';
+import { User, FileText, CheckCircle, XCircle, Clock, Eye, MessageSquare, CalendarClock, Shield, Award, CheckCircle2, ArrowRight, Star, ExternalLink } from 'lucide-react';
 import { getApplicationsByProject, updateApplicationStatus, advanceApplicationMilestone, completeApplicationAndIssueCertificate } from '../services/applicationsService';
 import { getProjectById } from '../services/projectsService';
 import { createConversation } from '../services/messagesService';
+import { getReviewForApplicationAndReviewer } from '../services/reviewsService';
 import { useAuthStore } from '../store/authStore';
 import { Application, Project, EscrowStage } from '../types';
 import { ReviewModal } from '../components/Reviews/ReviewModal';
+import { EscrowTracker } from '../components/Escrow/EscrowTracker';
 
 const statusConfig = {
   pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -20,12 +22,13 @@ const statusConfig = {
 export default function ViewApplications() {
   const { vacancyId } = useParams<{ vacancyId: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useAuthStore();
+  const { currentUser, userData } = useAuthStore();
   const [applications, setApplications] = useState<Application[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [selectedAppForReview, setSelectedAppForReview] = useState<Application | null>(null);
+  const [reviewedAppIds, setReviewedAppIds] = useState<Record<string, boolean>>({});
 
   const handleStartChat = async (studentId: string) => {
     if (!currentUser) return;
@@ -41,27 +44,40 @@ export default function ViewApplications() {
     }
   };
 
-  useEffect(() => {
-    if (vacancyId) {
-      loadData();
-    }
-  }, [vacancyId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!vacancyId) return;
     try {
+      const companyFilter = userData?.role === 'company' ? currentUser?.uid : undefined;
       const [projectData, applicationsData] = await Promise.all([
         getProjectById(vacancyId),
-        getApplicationsByProject(vacancyId),
+        getApplicationsByProject(vacancyId, companyFilter),
       ]);
       setProject(projectData);
       setApplications(applicationsData);
+      if (currentUser) {
+        const completedApps = applicationsData.filter((app) => app.status === 'completed');
+        if (completedApps.length > 0) {
+          const entries = await Promise.all(
+            completedApps.map(async (app) => {
+              const rev = await getReviewForApplicationAndReviewer(app.id, currentUser.uid).catch(() => null);
+              return [app.id, Boolean(rev)] as const;
+            })
+          );
+          setReviewedAppIds(Object.fromEntries(entries));
+        }
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [vacancyId, currentUser, userData?.role]);
+
+  useEffect(() => {
+    if (vacancyId) {
+      loadData();
+    }
+  }, [vacancyId, loadData]);
 
   const handleStatusChange = async (applicationId: string, newStatus: Application['status']) => {
     setUpdating(applicationId);
@@ -229,6 +245,13 @@ export default function ViewApplications() {
                             {updating === application.id ? '...' : 'Revisar'}
                           </button>
                           <button
+                            onClick={() => handleStatusChange(application.id, 'interview')}
+                            disabled={updating === application.id}
+                            className="px-3 py-1 text-sm bg-purple-100 text-purple-800 rounded hover:bg-purple-200 disabled:opacity-50"
+                          >
+                            {updating === application.id ? '...' : 'Entrevista'}
+                          </button>
+                          <button
                             onClick={() => handleStatusChange(application.id, 'accepted')}
                             disabled={updating === application.id}
                             className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded hover:bg-green-200 disabled:opacity-50"
@@ -247,6 +270,31 @@ export default function ViewApplications() {
                       {application.status === 'reviewed' && (
                         <>
                           <button
+                            onClick={() => handleStatusChange(application.id, 'interview')}
+                            disabled={updating === application.id}
+                            className="px-3 py-1 text-sm bg-purple-100 text-purple-800 rounded hover:bg-purple-200 disabled:opacity-50"
+                          >
+                            {updating === application.id ? '...' : 'Entrevista'}
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(application.id, 'accepted')}
+                            disabled={updating === application.id}
+                            className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded hover:bg-green-200 disabled:opacity-50"
+                          >
+                            {updating === application.id ? '...' : 'Aceptar'}
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(application.id, 'rejected')}
+                            disabled={updating === application.id}
+                            className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded hover:bg-red-200 disabled:opacity-50"
+                          >
+                            {updating === application.id ? '...' : 'Rechazar'}
+                          </button>
+                        </>
+                      )}
+                      {application.status === 'interview' && (
+                        <>
+                          <button
                             onClick={() => handleStatusChange(application.id, 'accepted')}
                             disabled={updating === application.id}
                             className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded hover:bg-green-200 disabled:opacity-50"
@@ -263,6 +311,33 @@ export default function ViewApplications() {
                         </>
                       )}
                     </div>
+                    {(application.status === 'accepted' || application.status === 'completed') && (
+                      <div className="w-full pt-2">
+                        <EscrowTracker
+                          status={application.status}
+                          stage={application.escrowStage}
+                          projectTitle={project?.title}
+                          compact={true}
+                        />
+                        {application.deliverableUrl && (
+                          <div className="mt-2 p-2.5 bg-surface/70 rounded-lg border border-border text-left text-xs space-y-1">
+                            <p className="font-semibold text-text-primary">Entregable radicado por el estudiante:</p>
+                            <a
+                              href={application.deliverableUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline inline-flex items-center space-x-1 break-all"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" />
+                              <span>{application.deliverableUrl}</span>
+                            </a>
+                            {application.deliverableNotes && (
+                              <p className="text-text-secondary">{application.deliverableNotes}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {application.status === 'accepted' && (
                       <div className="flex flex-col items-end space-y-1.5 pt-1">
                         <div className="text-[11px] text-accent-dark font-medium bg-accent/15 px-2.5 py-1 rounded-md flex items-center space-x-1">
@@ -303,14 +378,21 @@ export default function ViewApplications() {
                           <span>Proyecto Aprobado y Culminado</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedAppForReview(application)}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-md text-xs font-semibold shadow-2xs transition-colors"
-                          >
-                            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-                            <span>Calificar Estudiante</span>
-                          </button>
+                          {reviewedAppIds[application.id] ? (
+                            <span className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-md text-xs font-semibold">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              <span>Calificado</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedAppForReview(application)}
+                              className="inline-flex items-center space-x-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-md text-xs font-semibold shadow-2xs transition-colors"
+                            >
+                              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                              <span>Calificar Estudiante</span>
+                            </button>
+                          )}
                           {application.certificateId && (
                             <a
                               href={`/verify/${application.certificateId}`}
@@ -352,6 +434,12 @@ export default function ViewApplications() {
           reviewerRole="company"
           revieweeId={selectedAppForReview.studentId}
           revieweeName={selectedAppForReview.studentName || 'Estudiante ConectaU'}
+          onSuccess={() =>
+            setReviewedAppIds((prev) => ({
+              ...prev,
+              [selectedAppForReview.id]: true,
+            }))
+          }
         />
       )}
     </div>

@@ -13,6 +13,7 @@ export default function Jobs() {
     modality: '',
     location: '',
     category: '',
+    career: '',
   });
   const normalizeText = (value?: string) =>
     value?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
@@ -50,6 +51,12 @@ export default function Jobs() {
       if (filters.modality && normalizeText(project.modality) !== normalizeText(filters.modality)) return false;
       if (filters.category && normalizeText(project.category) !== normalizeText(filters.category)) return false;
       if (filters.location && !normalizeText(project.location).includes(normalizeText(filters.location))) return false;
+      if (filters.career) {
+        const careerBag = [project.career, project.category, project.title, project.skillsRequired?.join(' ')]
+          .map(normalizeText)
+          .join(' ');
+        if (!careerBag.includes(normalizeText(filters.career))) return false;
+      }
       if (search) {
         const bag = [
           project.title,
@@ -85,7 +92,7 @@ export default function Jobs() {
               />
             </div>
             <button
-              onClick={() => setFilters({ type: '', modality: '', location: '', category: '' })}
+              onClick={() => setFilters({ type: '', modality: '', location: '', category: '', career: '' })}
               className="text-xs sm:text-sm text-primary flex items-center space-x-1 touch-manipulation whitespace-nowrap"
             >
               <X className="h-4 w-4" />
@@ -93,7 +100,7 @@ export default function Jobs() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 text-sm">
             <label className="text-text-secondary text-xs sm:text-sm">
               Tipo
               <select
@@ -149,6 +156,16 @@ export default function Jobs() {
                 value={filters.location}
                 onChange={(event) => setFilters((prev) => ({ ...prev, location: event.target.value }))}
                 placeholder="Ej. Cúcuta"
+                className="mt-1 w-full px-3 py-2.5 sm:py-2 border border-border rounded-md text-sm sm:text-base touch-manipulation"
+              />
+            </label>
+            <label className="text-text-secondary text-xs sm:text-sm">
+              Carrera
+              <input
+                type="text"
+                value={filters.career}
+                onChange={(event) => setFilters((prev) => ({ ...prev, career: event.target.value }))}
+                placeholder="Ej. Sistemas"
                 className="mt-1 w-full px-3 py-2.5 sm:py-2 border border-border rounded-md text-sm sm:text-base touch-manipulation"
               />
             </label>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Briefcase, Code, Globe, Link as LinkIcon, MessageCircle, UserRound } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -28,19 +28,7 @@ export default function StudentProfile() {
 
   const isCompany = userData?.role === 'company';
 
-  useEffect(() => {
-    if (studentId) {
-      loadProfile(studentId);
-    }
-  }, [studentId]);
-
-  useEffect(() => {
-    if (isCompany && userData?.id) {
-      loadSavedProfiles();
-    }
-  }, [userData?.id, isCompany]);
-
-  const loadProfile = async (id: string) => {
+  const loadProfile = useCallback(async (id: string) => {
     setLoading(true);
     try {
       const data = await getStudentProfile(id);
@@ -55,17 +43,29 @@ export default function StudentProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const loadSavedProfiles = async () => {
+  const loadSavedProfiles = useCallback(async () => {
     if (!userData?.id) return;
     try {
-      const data = await getSavedProfiles(userData.id);
-      setSavedProfiles(data);
+      const profiles = await getSavedProfiles(userData.id);
+      setSavedProfiles(profiles);
     } catch (error) {
       console.error('Error loading saved profiles:', error);
     }
-  };
+  }, [userData?.id]);
+
+  useEffect(() => {
+    if (studentId) {
+      loadProfile(studentId);
+    }
+  }, [studentId, loadProfile]);
+
+  useEffect(() => {
+    if (isCompany && userData?.id) {
+      loadSavedProfiles();
+    }
+  }, [userData?.id, isCompany, loadSavedProfiles]);
 
   const isProfileSaved = () =>
     profile && savedProfiles.some((saved) => saved.studentId === profile.user.id);

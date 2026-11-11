@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, MapPin, DollarSign, Clock, Search, TrendingUp, Users, FileText, CalendarClock, GraduationCap, BookmarkCheck, Download, Smartphone, Apple, Loader } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -42,21 +42,6 @@ export default function Home() {
   const [adminStats, setAdminStats] = useState({ totalUsers: 0, totalProjects: 0, totalApplications: 0, totalMatches: 0 });
   const [adminStatsLoading, setAdminStatsLoading] = useState(true);
 
-  useEffect(() => {
-    if (userData?.role === 'student') {
-      loadProjects();
-      loadStudentStats();
-    } else if (!userData) {
-      loadProjects();
-    } else if (userData?.role === 'company') {
-      loadCompanyStats();
-      loadSavedProfilesCount();
-      loadTalentSuggestions();
-    } else if (userData?.role === 'admin') {
-      loadAdminStats();
-    }
-  }, [userData]);
-
   const loadProjects = async () => {
     try {
       const data = await getProjects({ status: 'active' });
@@ -68,34 +53,34 @@ export default function Home() {
     }
   };
 
-const loadStudentStats = async () => {
-  if (!userData?.id) return;
-  setStudentStatsLoading(true);
-  try {
-    const stats = await getStudentStats(userData.id);
-    setStudentStats(stats);
-    await loadStudentApplications(userData.id);
-  } catch (error) {
-    console.error('Error loading student stats:', error);
-  } finally {
-    setStudentStatsLoading(false);
-  }
-};
+  const loadStudentApplications = useCallback(async (studentId: string) => {
+    setStudentAppsLoading(true);
+    try {
+      const apps = await getApplicationsByStudent(studentId);
+      setStudentApplications(apps.slice(0, 5));
+    } catch (error) {
+      console.error('Error loading student applications:', error);
+      setStudentApplications([]);
+    } finally {
+      setStudentAppsLoading(false);
+    }
+  }, []);
 
-const loadStudentApplications = async (studentId: string) => {
-  setStudentAppsLoading(true);
-  try {
-    const apps = await getApplicationsByStudent(studentId);
-    setStudentApplications(apps.slice(0, 5));
-  } catch (error) {
-    console.error('Error loading student applications:', error);
-    setStudentApplications([]);
-  } finally {
-    setStudentAppsLoading(false);
-  }
-};
+  const loadStudentStats = useCallback(async () => {
+    if (!userData?.id) return;
+    setStudentStatsLoading(true);
+    try {
+      const stats = await getStudentStats(userData.id);
+      setStudentStats(stats);
+      await loadStudentApplications(userData.id);
+    } catch (error) {
+      console.error('Error loading student stats:', error);
+    } finally {
+      setStudentStatsLoading(false);
+    }
+  }, [userData?.id, loadStudentApplications]);
 
-  const loadCompanyStats = async () => {
+  const loadCompanyStats = useCallback(async () => {
     if (!userData?.id) return;
     setCompanyStatsLoading(true);
     setCompanyApplicationsLoading(true);
@@ -116,7 +101,7 @@ const loadStudentApplications = async (studentId: string) => {
       setCompanyStatsLoading(false);
       setCompanyApplicationsLoading(false);
     }
-  };
+  }, [userData?.id]);
 
   const loadAdminStats = async () => {
     try {
@@ -129,7 +114,7 @@ const loadStudentApplications = async (studentId: string) => {
     }
   };
 
-  const loadSavedProfilesCount = async () => {
+  const loadSavedProfilesCount = useCallback(async () => {
     if (!userData?.id) return;
     try {
       const savedProfiles = await getSavedProfiles(userData.id);
@@ -137,7 +122,7 @@ const loadStudentApplications = async (studentId: string) => {
     } catch (error) {
       console.error('Error loading saved profiles:', error);
     }
-  };
+  }, [userData?.id]);
 
   const loadTalentSuggestions = async () => {
     setTalentLoading(true);
@@ -150,6 +135,21 @@ const loadStudentApplications = async (studentId: string) => {
       setTalentLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (userData?.role === 'student') {
+      loadProjects();
+      loadStudentStats();
+    } else if (!userData) {
+      loadProjects();
+    } else if (userData?.role === 'company') {
+      loadCompanyStats();
+      loadSavedProfilesCount();
+      loadTalentSuggestions();
+    } else if (userData?.role === 'admin') {
+      loadAdminStats();
+    }
+  }, [userData, loadStudentStats, loadCompanyStats, loadSavedProfilesCount]);
 
 const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 const filteredProjects = projects.filter((project) => {
@@ -187,22 +187,22 @@ const filteredProjects = projects.filter((project) => {
     [companyApplications]
   );
 
-  const aggregateByField = (getter: (app: Application) => string) => {
+  const aggregateByField = useCallback((getter: (app: Application) => string) => {
     const counts: Record<string, number> = {};
     companyApplications.forEach((app) => {
       const key = getter(app) || 'Sin información';
       counts[key] = (counts[key] || 0) + 1;
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  };
+  }, [companyApplications]);
 
   const topUniversities = useMemo(
     () => aggregateByField((app) => app.studentUniversity || ''),
-    [companyApplications]
+    [aggregateByField]
   );
   const topCareers = useMemo(
     () => aggregateByField((app) => app.studentCareer || ''),
-    [companyApplications]
+    [aggregateByField]
   );
   const topSkills = useMemo(() => {
     const counts: Record<string, number> = {};
