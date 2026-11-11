@@ -69,10 +69,10 @@
 | **CON-29** | Fernanda Jaimes | Frontend | Módulo de ayuda y reporte de incidencias en proyectos | `feature/CON-29-modulo-ayuda-reportes` | `src/components/Support/SupportModal.tsx` | Finalizado |
 | **CON-30** | María José Gómez | Backend | Optimización de consultas e índices en Cloud Firestore | `feature/CON-30-optimizacion-firestore` | `firestore.indexes.json` (7 índices compuestos) | Finalizado |
 | **CON-31** | Yulitza Carrero | QA & CI | Pruebas de interfaz y adaptabilidad en pantallas móviles y de escritorio | `feature/CON-31-pruebas-accesibilidad` | `.eslintrc.cjs` + `docs/ACCESIBILIDAD_WCAG.md` | Finalizado |
-| **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-pruebas-e2e` | Suite `node --test` (14/14 PASS) + Edge CDP (10/10) | Finalizado |
-| **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `docs/pruebas/PLAN_DE_PRUEBAS_CONSOLIDADO.md` | En revisión |
-| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | Cuentas piloto `Usuarios_de_prueba` + `.dev_activity.log` | En curso |
-| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-entrega-final-docs` | `v1.3.0-prod-verified` (pendiente cierre final 30/11) | En curso |
+| **CON-32** | Yulitza Carrero | QA & CI | Pruebas funcionales de extremo a extremo de todo el sistema | `feature/CON-32-validacion-spark-free` | Suite Web `20/20` + Functions `4/4` + Edge CDP `21/21` | Finalizado |
+| **CON-33** | Yulitza Carrero | QA & CI | Actualización final de diagramas C4 y especificación técnica en el DERS | `feature/CON-33-actualizacion-ders` | `DOSSIER_DISENO_DERS.md` + `PLAN_DE_PRUEBAS_CONSOLIDADO.md` | Finalizado |
+| **CON-34** | Yulitza Carrero | QA & CI | Validación piloto con usuarios (estudiantes y empresas de muestra) | `feature/CON-34-validacion-piloto` | UAT multi-rol 21/21 + PR listo para merge en vivo | En revisión |
+| **CON-35** | Eduardo Soto | Full-Stack | Preparación de entrega final, release de código y sustentación del proyecto | `feature/CON-35-readme-svg-spark-free` | `v1.3.1-spark-free` en producción (pendiente cierre 30/11) | En curso |
 
 ---
 
